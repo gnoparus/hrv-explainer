@@ -260,6 +260,12 @@ button {
   margin: 0 auto;
 }
 
+.panel__svg--wide {
+  aspect-ratio: 3 / 1;
+  flex: none;
+  margin: 0 auto;
+}
+
 .trace {
   stroke-width: 2.5;
   stroke-linecap: round;
