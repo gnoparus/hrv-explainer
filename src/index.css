@@ -34,9 +34,7 @@ body,
 }
 
 body {
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(47, 231, 201, 0.08), transparent),
-    var(--bg);
+  background: var(--bg);
   overscroll-behavior: none;
 }
 
@@ -52,7 +50,8 @@ button {
   flex-direction: column;
   gap: 10px;
   height: 100svh;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom))
     max(16px, env(safe-area-inset-left));
 }
@@ -110,12 +109,17 @@ button {
   border-color: var(--c-teal);
 }
 
+.export-btn--saved {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
 .chart-row {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 12px;
-  min-height: 0;
+  min-height: 240px;
 }
 
 @media (max-width: 800px), (orientation: portrait) {
@@ -174,18 +178,7 @@ button {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--tile-color);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--tile-color) 55%, transparent);
-  animation: glowBreathe 2.4s ease-in-out infinite;
-}
-
-@keyframes glowBreathe {
-  0%,
-  100% {
-    text-shadow: 0 0 8px color-mix(in srgb, var(--tile-color) 40%, transparent);
-  }
-  50% {
-    text-shadow: 0 0 18px color-mix(in srgb, var(--tile-color) 70%, transparent);
-  }
+  text-shadow: 0 0 6px color-mix(in srgb, var(--tile-color) 35%, transparent);
 }
 
 .metric-tile__unit {
@@ -231,6 +224,7 @@ button {
   font-size: 13px;
   line-height: 1.45;
   color: var(--text);
+  text-transform: none;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -269,7 +263,7 @@ button {
 .trace {
   stroke-width: 2.5;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px currentColor);
+  filter: drop-shadow(0 0 3px currentColor);
 }
 
 .trace--teal {
@@ -306,10 +300,16 @@ button {
   text-anchor: middle;
 }
 
+.axis-tick {
+  fill: var(--text-dim);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
 .dot {
   fill: var(--c-teal);
   opacity: 0.55;
-  filter: drop-shadow(0 0 3px var(--c-teal));
+  filter: drop-shadow(0 0 1.5px var(--c-teal));
 }
 
 /* ---------- controls ---------- */

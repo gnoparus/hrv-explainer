@@ -23,3 +23,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# impeccable design skill: regenerated critique snapshots, not history worth keeping
+.impeccable/critique/
