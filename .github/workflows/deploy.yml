@@ -20,7 +20,17 @@ jobs:
       - run: npx tsc -b
       - run: npx tsx src/sim/selfcheck.ts
       - run: npm run build
+      - name: Check deploy secrets are configured
+        id: secrets_check
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CLOUDFLARE_API_TOKEN/CLOUDFLARE_ACCOUNT_ID not set -- skipping deploy. See issue #1." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Deploy to Cloudflare Pages
+        if: steps.secrets_check.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
