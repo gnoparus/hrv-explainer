@@ -9,7 +9,7 @@ import { PoincarePlot } from './components/PoincarePlot'
 // SVG charts are serialized standalone for export -- they don't inherit index.css, so the
 // handful of rules that give the traces their stroke/fill/glow have to travel with the markup.
 const EXPORT_SVG_STYLE = `
-  .trace { stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 6px currentColor); }
+  .trace { stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 3px currentColor); }
   .trace--teal { stroke: #2fe7c9; color: #2fe7c9; }
   .trace--violet { stroke: #b18bff; color: #b18bff; fill: rgba(177,139,255,0.25); }
   .gridline { stroke: #1b2733; stroke-width: 1; }
@@ -17,7 +17,8 @@ const EXPORT_SVG_STYLE = `
   .band--lf { fill: #ffc857; }
   .band--hf { fill: #2fe7c9; }
   .band-label { fill: #7c8fa0; font-size: 11px; text-anchor: middle; }
-  .dot { fill: #2fe7c9; opacity: 0.55; filter: drop-shadow(0 0 3px #2fe7c9); }
+  .axis-tick { fill: #7c8fa0; font-size: 10px; }
+  .dot { fill: #2fe7c9; opacity: 0.55; filter: drop-shadow(0 0 1.5px #2fe7c9); }
 `
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
   const [vagalTone, setVagalTone] = useState(0.6)
   const snapshot = useHrvSimulation({ breathingRateBrpm, vagalTone })
   const exportRef = useRef<HTMLDivElement>(null)
+  const [exportState, setExportState] = useState<'idle' | 'saved'>('idle')
 
   function handleExport() {
     const svgs = exportRef.current?.querySelectorAll('svg')
@@ -46,6 +48,8 @@ function App() {
       link.download = `hrv-snapshot-${breathingRateBrpm}bpm-${Math.round(vagalTone * 100)}pct.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
+      setExportState('saved')
+      setTimeout(() => setExportState('idle'), 1500)
     }
 
     svgs.forEach((svg) => {
@@ -79,8 +83,12 @@ function App() {
           <span className="pulse-dot" key={snapshot.beatCount} />
           HRV Explainer
         </div>
-        <button type="button" className="export-btn" onClick={handleExport}>
-          Export snapshot
+        <button
+          type="button"
+          className={`export-btn${exportState === 'saved' ? ' export-btn--saved' : ''}`}
+          onClick={handleExport}
+        >
+          {exportState === 'saved' ? 'Saved' : 'Export snapshot'}
         </button>
       </header>
 
