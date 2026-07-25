@@ -68,7 +68,13 @@ export function Tachogram({ points }: { points: { t: number; rrMs: number }[] })
           </text>
         ))}
         {xTicks.map((tick, i) => (
-          <text key={i} x={tick.pos} y={VB_H - 2} textAnchor="middle" className="axis-tick">
+          <text
+            key={i}
+            x={tick.pos}
+            y={VB_H - 2}
+            textAnchor={tick.pos >= VB_W - 1 ? 'end' : 'middle'}
+            className="axis-tick"
+          >
             {tick.label}
           </text>
         ))}
