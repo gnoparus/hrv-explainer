@@ -6,8 +6,9 @@ product
 
 ## Users
 
-Two overlapping audiences: (1) a live thesis-defense audience watching the
-presenter drag sliders in real time to make a physiological point, and (2)
+Primary: doctors in an anti-aging-medicine master's program, evaluating this
+live at a thesis defense — a clinician audience that already knows ANS/HRV
+vocabulary, not students encountering it for the first time. Secondary:
 students/self-learners exploring HRV physiology hands-on afterward. Both are
 watching a screen, not reading a manual — the interface has to carry the
 argument (RSA amplitude follows a resonance curve, LF/HF-as-balance is
@@ -21,8 +22,8 @@ tone, watch RMSSD, SDNN, and the LF/HF spectral split respond live. It exists
 to make two physiology arguments demonstrable rather than merely stated —
 that HF amplitude is resonance-shaped (not constant), and that the
 LF/HF-as-sympathovagal-balance interpretation breaks down under paced
-breathing. Success is a committee member or student seeing the effect happen
-under their own slider drag, not being told about it.
+breathing. Success is a committee member, or a student, seeing the effect
+happen under their own slider drag, not being told about it.
 
 ## Brand Personality
 

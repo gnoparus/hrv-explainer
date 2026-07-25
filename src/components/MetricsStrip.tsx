@@ -42,14 +42,14 @@ export function MetricsStrip({
         value={rmssdMs}
         unit="ms"
         colorVar="--c-teal"
-        info="Root mean square of successive RR differences. Mostly reflects vagal (parasympathetic) tone -- the primary short-term HRV outcome."
+        info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome."
       />
       <MetricTile
         label="SDNN"
         value={sdnnMs}
         unit="ms"
         colorVar="--c-violet"
-        info="Standard deviation of all RR intervals in the window. Reflects total variability from both branches of the autonomic nervous system."
+        info="SD of all RR intervals in the window -- total variability, both autonomic branches, not vagal-specific."
       />
       <MetricTile
         label="HF power"
@@ -63,7 +63,7 @@ export function MetricsStrip({
         value={lfPower}
         unit="ms²"
         colorVar="--c-amber"
-        info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid -- shown here descriptively, not as a mechanistic index."
+        info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index."
       />
       </div>
       <div className="metrics-strip__caption">rolling 60s window</div>
