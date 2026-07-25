@@ -15,8 +15,12 @@ Live: https://hrv-explainer.pages.dev
   peaking at ~0.1 Hz (6 breaths/min), not a constant. A constant HF amplitude
   would make RMSSD *fall* as breathing slows, which is backwards from real
   paced-breathing physiology.
-- **LF** (baroreflex) — fixed ~0.1 Hz oscillation, present regardless of
-  breathing rate.
+- **LF** (baroreflex) — a band-limited stochastic (Ornstein-Uhlenbeck)
+  process wandering around ~0.1 Hz within the 0.04-0.15 Hz LF band, present
+  regardless of breathing rate. Deliberately not a fixed-frequency tone: a
+  fixed 0.1 Hz LF oscillator sits right next to the HF oscillator's
+  frequency at 6-12 breaths/min and beats against it, causing RMSSD to
+  wobble non-monotonically in that range (issue #3).
 
 LF/HF power is computed by integrating the actual PSD over each frequency
 band (`src/sim/psd.ts`), not by attributing "the breathing oscillator" to HF —
@@ -27,8 +31,9 @@ LF/HF-as-sympathovagal-balance interpretation is considered invalid (see the
 tap-to-reveal info tags in the UI).
 
 Run `npx tsx src/sim/selfcheck.ts` to verify the math: known-value RMSSD/SDNN
-checks, a pure-sinusoid PSD peak-location check, and the RMSSD-direction
-check (6 breaths/min must produce higher RMSSD than 15/min).
+checks, a pure-sinusoid PSD peak-location check, the RMSSD-direction check
+(6 breaths/min must produce higher RMSSD than 15/min), and an RMSSD
+unimodality check across the 6-12 breaths/min resonance zone (no wobble).
 
 ## Development
 
@@ -59,12 +64,18 @@ permission).
 
 ## Known limitations
 
-- RMSSD is not perfectly monotonic across the full breathing-rate slider —
-  there's a broad, roughly flat 6–12 breaths/min "resonance zone" (with some
-  wobble from interference between the two similarly-frequencied
-  oscillators) rather than a single sharp peak. Scientifically defensible
-  (real paced-breathing resonance is a broad zone, not a single point), but
-  worth knowing before a live demo.
+- RMSSD peaks as a broad 6–12 breaths/min "resonance zone" rather than a
+  single sharp point — scientifically defensible (real paced-breathing
+  resonance is a broad zone, not a single frequency). Previously this zone
+  also wobbled non-monotonically from beat-frequency interference between a
+  fixed-frequency LF oscillator and the HF oscillator (issue #3); LF is now
+  a band-limited stochastic process instead of a fixed tone, which reduces
+  the wobble to residual seed-to-seed noise rather than a deterministic dip.
+  Restoring the direction guarantee (6bpm RMSSD > 15bpm) without that fixed
+  LF tone required narrowing the HF resonance curve, which makes HF power
+  visibly thinner at fast breathing (20+ breaths/min) than before — a real
+  tradeoff, not a free fix; see the `SIGMA_HF_HZ` comment in
+  `src/sim/rrGenerator.ts`.
 - Metrics (RMSSD/SDNN/PSD) compute over a rolling 60s window for live
   responsiveness, shorter than the clinical 5-minute short-term HRV standard
   used for the tachogram/Poincaré display. This is a deliberate trade for a
