@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-26T00:00:00Z",
+  "title": "Design System: HRV Explainer",
+  "extensions": {
+    "colorMeta": {
+      "void": { "role": "neutral", "displayName": "Void", "canonical": "#05080b", "tonalRamp": ["#020304", "#05080b", "#0b1117", "#0e161d", "#1b2733", "#3a4c5c", "#7c8fa0", "#d7e2ea"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#0b1117", "tonalRamp": ["#020304", "#05080b", "#0b1117", "#0e161d", "#1b2733", "#3a4c5c", "#7c8fa0", "#d7e2ea"] },
+      "panel-raised": { "role": "neutral", "displayName": "Panel Raised", "canonical": "#0e161d", "tonalRamp": ["#020304", "#05080b", "#0b1117", "#0e161d", "#1b2733", "#3a4c5c", "#7c8fa0", "#d7e2ea"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "#1b2733", "tonalRamp": ["#020304", "#05080b", "#0b1117", "#0e161d", "#1b2733", "#3a4c5c", "#7c8fa0", "#d7e2ea"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#d7e2ea" },
+      "ink-dim": { "role": "neutral", "displayName": "Ink Dim", "canonical": "#7c8fa0" },
+      "signal-teal": { "role": "primary", "displayName": "Signal Teal", "canonical": "#2fe7c9", "tonalRamp": ["#04352c", "#075a49", "#0c8a6f", "#16b899", "#2fe7c9", "#6df0dc", "#a8f6e9", "#d9fbf3"] },
+      "signal-violet": { "role": "secondary", "displayName": "Signal Violet", "canonical": "#b18bff", "tonalRamp": ["#241238", "#3c1e5e", "#5c2f8f", "#8259c9", "#b18bff", "#c9aeff", "#e0d1ff", "#f2eaff"] },
+      "signal-amber": { "role": "tertiary", "displayName": "Signal Amber", "canonical": "#ffc857", "tonalRamp": ["#3d2b04", "#664707", "#996b0b", "#cc9214", "#ffc857", "#ffd980", "#ffe7ad", "#fff4d9"] }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "App name in the header, the only weight+size emphasis moment." },
+      "metric": { "displayName": "Metric", "purpose": "Live RMSSD/SDNN/LF/HF values; the visual focal point." },
+      "body": { "displayName": "Body", "purpose": "Base document font; rarely seen directly." },
+      "label": { "displayName": "Label", "purpose": "Panel titles, metric-tile headers, control captions." }
+    },
+    "shadows": [
+      { "name": "signal-glow", "value": "filter: drop-shadow(0 0 6px currentColor)", "purpose": "SVG trace glow, colored by the signal it belongs to." },
+      { "name": "metric-glow", "value": "text-shadow: 0 0 8-18px color-mix(in srgb, var(--tile-color) 40-70%, transparent)", "purpose": "Pulsing glow on live metric values (glowBreathe animation)." },
+      { "name": "popover-shadow", "value": "0 12px 32px rgba(0, 0, 0, 0.5)", "purpose": "The one physical drop-shadow in the system, on the info-tag popover only." }
+    ],
+    "motion": [
+      { "name": "pulse-flash", "value": "pulseFlash 0.6s ease-out", "purpose": "Heartbeat dot flash on each new beat in the header." },
+      { "name": "glow-breathe", "value": "glowBreathe 2.4s ease-in-out infinite", "purpose": "Idle pulse on metric-tile values signaling live data." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "700px" },
+      { "name": "tablet-portrait", "value": "800px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Export Button",
+      "kind": "button",
+      "refersTo": "export-btn",
+      "description": "Bordered panel button, top-right of the header, exports the three SVG charts as a PNG.",
+      "html": "<button class=\"ds-export-btn\">Export snapshot</button>",
+      "css": ".ds-export-btn { background: #0e161d; border: 1px solid #1b2733; color: #d7e2ea; padding: 12px 18px; border-radius: 10px; font-weight: 500; min-height: 44px; } .ds-export-btn:active { border-color: #2fe7c9; }"
+    },
+    {
+      "name": "Preset Button",
+      "kind": "button",
+      "refersTo": "preset-btn",
+      "description": "Age-preset quick-select buttons (Young / Older) that jump vagal tone to a representative value.",
+      "html": "<button class=\"ds-preset-btn\">Young</button>",
+      "css": ".ds-preset-btn { min-height: 44px; padding: 10px 18px; border-radius: 10px; border: 1px solid #1b2733; background: #0e161d; color: #d7e2ea; font-weight: 500; } .ds-preset-btn:active { border-color: #b18bff; color: #b18bff; }"
+    },
+    {
+      "name": "Metric Tile",
+      "kind": "card",
+      "refersTo": "metric-tile",
+      "description": "Displays one live HRV metric (label, tap-to-reveal info, glowing tabular-nums value) in its assigned signal color.",
+      "html": "<div class=\"ds-metric-tile\" style=\"--tile-color:#2fe7c9\"><div class=\"ds-metric-tile__head\">RMSSD</div><div class=\"ds-metric-tile__value\">42.3<span class=\"ds-metric-tile__unit\">ms</span></div></div>",
+      "css": ".ds-metric-tile { background: #0b1117; border: 1px solid #1b2733; border-radius: 14px; padding: 8px 16px; } .ds-metric-tile__head { color: #7c8fa0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; } .ds-metric-tile__value { margin-top: 2px; font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--tile-color); text-shadow: 0 0 14px color-mix(in srgb, var(--tile-color) 55%, transparent); } .ds-metric-tile__unit { font-size: 15px; font-weight: 400; color: #7c8fa0; margin-left: 4px; }"
+    },
+    {
+      "name": "Chart Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Bordered container for each SVG chart (tachogram, PSD, Poincare) with an uppercase dim title.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-panel__title\">Tachogram</div><svg class=\"ds-panel__svg\"></svg></div>",
+      "css": ".ds-panel { background: #0b1117; border: 1px solid #1b2733; border-radius: 14px; padding: 10px 14px 6px; display: flex; flex-direction: column; } .ds-panel__title { font-size: 13px; color: #7c8fa0; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; } .ds-panel__svg { flex: 1; width: 100%; min-height: 120px; }"
+    },
+    {
+      "name": "Range Slider",
+      "kind": "input",
+      "refersTo": "range-slider",
+      "description": "Teal-to-violet gradient track with a white teal-bordered thumb; drives breathing rate and vagal tone.",
+      "html": "<input type=\"range\" class=\"ds-range\" min=\"6\" max=\"24\" step=\"0.5\" value=\"12\">",
+      "css": ".ds-range { -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; } .ds-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #2fe7c9, #b18bff); } .ds-range::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; margin-top: -11px; border-radius: 999px; background: #fff; border: 3px solid #2fe7c9; box-shadow: 0 0 10px rgba(47, 231, 201, 0.6); }"
+    },
+    {
+      "name": "Info Tag",
+      "kind": "custom",
+      "refersTo": "info-tag",
+      "description": "Tap-to-reveal 'i' button that opens a definition popover; the system's one floating/overlay element with a real drop-shadow.",
+      "html": "<span class=\"ds-info-tag\"><button class=\"ds-info-tag__btn\" aria-label=\"What is this metric?\">i</button><span class=\"ds-info-tag__popover\">Definition text goes here.</span></span>",
+      "css": ".ds-info-tag { position: relative; display: inline-flex; } .ds-info-tag__btn { width: 20px; height: 20px; border-radius: 999px; border: 1px solid #7c8fa0; background: transparent; color: #7c8fa0; font-size: 12px; font-style: italic; display: inline-flex; align-items: center; justify-content: center; } .ds-info-tag__popover { position: absolute; z-index: 20; top: 26px; left: 0; width: 240px; background: #10181f; border: 1px solid #1b2733; border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.45; color: #d7e2ea; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bedside Monitor",
+    "overview": "The whole interface reads as an instrument, not an app: a near-black field, a handful of glowing traces, numbers that visibly breathe. Every design decision serves one goal -- a thesis-defense audience or a student dragging a slider should see the physiology happen, not read a caption explaining it. Density stays low and the layout stays single-screen: no navigation, no scrolling mid-demo, nothing between the presenter's hand and the result on screen. This system explicitly rejects the generic SaaS-dashboard look (cream backgrounds, card grids, gradient text, hero-metric tiles) and the static textbook-figure look (flat, printed, non-responsive). It is not decorated; every glow, pulse, and shadow earns its place by reinforcing that the signal is live.",
+    "keyCharacteristics": [
+      "Near-black void with three glowing signal colors, nothing else competing for attention",
+      "Numbers that pulse and glow in sync with the underlying data, not static labels",
+      "Compact, dense, single-viewport layout -- built to survive a live demo, not a scroll",
+      "Tabular numerals everywhere a value updates, so nothing jitters mid-sentence"
+    ],
+    "rules": [
+      { "name": "The Three-Signal Rule", "body": "Only teal, violet, and amber ever represent data. If a fourth data series is ever added, reuse one of the three with a different visual encoding before introducing a new color.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Any number that updates in real time uses font-variant-numeric: tabular-nums.", "section": "typography" },
+      { "name": "The No-Gray-Shadow Rule", "body": "Panels and cards never cast a shadow. The only shadows in the system are colored signal glow and the one popover overlay.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the whole experience on one screen with no navigation or scrolling during a live demo.",
+      "Do use tabular-nums on every value that updates in real time.",
+      "Do reserve signal glow (drop-shadow / text-shadow in the data's own color) for things that are actually live data, not decoration.",
+      "Do keep buttons at the single bordered-panel treatment; don't invent a second, higher-emphasis button style.",
+      "Do respect prefers-reduced-motion for the pulse-dot flash and metric-tile glow-breathe animation."
+    ],
+    "donts": [
+      "Don't introduce a cream/warm-neutral background or card-grid dashboard layout.",
+      "Don't flatten the charts into static, non-glowing figures.",
+      "Don't add a fourth data color. Reuse teal/violet/amber with a different encoding first.",
+      "Don't add a gray/black box-shadow to a panel or metric tile.",
+      "Don't repurpose --c-red for anything but a genuine error/alert state."
+    ]
+  }
+}
