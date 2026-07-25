@@ -44,26 +44,52 @@ function approxEqual(a: number, b: number, tol: number, label: string) {
   console.log(`[ok] 0.25 Hz sinusoid: PSD peak at ${peakFreq.toFixed(3)} Hz, HF ${hf.toFixed(1)} > LF ${lf.toFixed(1)}`)
 }
 
-// 3. Direction check: slow breathing (6/min) must produce HIGHER RMSSD than fast (15/min).
+function simulateRmssd(breathingRateBrpm: number, seed: number): number {
+  const gen = new RRGenerator(mulberry32(seed))
+  const rr: number[] = []
+  while (gen.elapsedSeconds < 300) {
+    const beat = gen.nextBeat({ baselineRRms: 800, breathingRateBrpm, vagalTone: 0.7 })
+    rr.push(beat.rrMs)
+  }
+  return rmssd(rr)
+}
+
+// 3. Direction check: slow breathing (6/min) must produce HIGHER RMSSD than fast (15/min), across
+// several seeds -- since LF is now stochastic (issue #3 fix), a single seed isn't enough to trust.
 // This is the critical physiology check -- see rrGenerator.ts comment on why A_HF can't be constant.
 {
-  function simulateRmssd(breathingRateBrpm: number): number {
-    const gen = new RRGenerator(mulberry32(42))
-    const rr: number[] = []
-    while (gen.elapsedSeconds < 300) {
-      const beat = gen.nextBeat({ baselineRRms: 800, breathingRateBrpm, vagalTone: 0.7 })
-      rr.push(beat.rrMs)
-    }
-    return rmssd(rr)
+  const seeds = [1, 42, 99]
+  for (const seed of seeds) {
+    const rmssdSlow = simulateRmssd(6, seed)
+    const rmssdFast = simulateRmssd(15, seed)
+    assert(
+      rmssdSlow > rmssdFast,
+      `seed ${seed}: expected RMSSD at 6 breaths/min (${rmssdSlow.toFixed(1)}) > RMSSD at 15 breaths/min (${rmssdFast.toFixed(1)})`,
+    )
   }
+  console.log(`[ok] RMSSD direction correct across ${seeds.length} seeds: 6/min > 15/min`)
+}
 
-  const rmssdSlow = simulateRmssd(6)
-  const rmssdFast = simulateRmssd(15)
-  assert(
-    rmssdSlow > rmssdFast,
-    `expected RMSSD at 6 breaths/min (${rmssdSlow.toFixed(1)}) > RMSSD at 15 breaths/min (${rmssdFast.toFixed(1)})`,
+// 4. Smoothness check: RMSSD across the 6-12 breaths/min resonance zone should not wobble
+// (issue #3 -- a fixed-frequency LF tone used to beat against the HF oscillator in this range).
+// Averaged over several seeds: LF is now stochastic, so a single seed's residual jitter isn't a
+// meaningful signal either way -- the property we actually care about is the shape of the mean curve.
+{
+  // "Smooth" means unimodal (rises to a single peak, then falls) -- NOT flat. A broad resonance
+  // hump is real physiology (see README); a wobble is a sign reversal in the middle of that hump
+  // (e.g. rise, dip, rise again), which is what the old fixed-frequency LF tone caused.
+  const brpmSweep = [6, 7, 8, 9, 10, 11, 12]
+  const seeds = [1, 2, 3, 42, 99]
+  const avgCurve = brpmSweep.map(
+    (brpm) => seeds.reduce((sum, seed) => sum + simulateRmssd(brpm, seed), 0) / seeds.length,
   )
-  console.log(`[ok] RMSSD direction correct: 6/min=${rmssdSlow.toFixed(1)}ms > 15/min=${rmssdFast.toFixed(1)}ms`)
+  const diffs = avgCurve.slice(1).map((v, i) => v - avgCurve[i])
+  const signChanges = diffs.slice(1).filter((d, i) => Math.sign(d) !== 0 && Math.sign(diffs[i]) !== 0 && Math.sign(d) !== Math.sign(diffs[i])).length
+  assert(
+    signChanges <= 1,
+    `expected mean RMSSD across 6-12 breaths/min to be unimodal (at most 1 direction change), got ${signChanges} -- values: ${avgCurve.map((v) => v.toFixed(1)).join(', ')}`,
+  )
+  console.log(`[ok] RMSSD unimodal (no wobble) across 6-12/min resonance zone (${seeds.length}-seed mean): ${avgCurve.map((v) => v.toFixed(1)).join(', ')}`)
 }
 
 console.log('\nAll self-checks passed.')
