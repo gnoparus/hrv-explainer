@@ -44,6 +44,8 @@ export function PsdChart({ psd }: { psd: PsdResult }) {
     }
   }, [psd, plotBottom])
 
+  // ponytail: same non-uniform tick-text stretch as Tachogram under preserveAspectRatio="none"
+  // -- see #11.
   return (
     <div className="panel">
       <div className="panel__title">Frequency spectrum (PSD, Hz, last 60s)</div>

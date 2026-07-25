@@ -36,9 +36,11 @@ export function Tachogram({ points }: { points: { t: number; rrMs: number }[] })
       .y((d) => y(d.rrMs))
       .curve(curveMonotoneX)
 
+    // Generate backward from tEnd so each tick's position and its "-Nm"/"now" label
+    // always agree exactly, instead of landing on absolute-minute boundaries that drift
+    // from a tEnd that isn't itself minute-aligned.
     const ticks: { pos: number; label: string }[] = []
-    const firstTick = Math.ceil(tStart / 60) * 60
-    for (let tk = firstTick; tk <= tEnd; tk += 60) {
+    for (let tk = tEnd; tk >= tStart; tk -= 60) {
       const minAgo = Math.round((tEnd - tk) / 60)
       ticks.push({ pos: x(tk), label: minAgo === 0 ? 'now' : `-${minAgo}m` })
     }
@@ -48,6 +50,10 @@ export function Tachogram({ points }: { points: { t: number; rrMs: number }[] })
     return { path: gen(points) ?? '', xTicks: ticks, yTicks, plotBottom }
   }, [points])
 
+  // ponytail: preserveAspectRatio="none" keeps the chart edge-to-edge in its panel, but
+  // stretches the tick text non-uniformly when the panel's aspect isn't 3:1 (see #11).
+  // Fix is a real design call (HTML overlay vs. losing axis labels in the PNG export) --
+  // deferred rather than bolted on here.
   return (
     <div className="panel">
       <div className="panel__title">Tachogram (R-R intervals, ms)</div>
