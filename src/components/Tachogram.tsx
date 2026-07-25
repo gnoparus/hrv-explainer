@@ -50,14 +50,10 @@ export function Tachogram({ points }: { points: { t: number; rrMs: number }[] })
     return { path: gen(points) ?? '', xTicks: ticks, yTicks, plotBottom }
   }, [points])
 
-  // ponytail: preserveAspectRatio="none" keeps the chart edge-to-edge in its panel, but
-  // stretches the tick text non-uniformly when the panel's aspect isn't 3:1 (see #11).
-  // Fix is a real design call (HTML overlay vs. losing axis labels in the PNG export) --
-  // deferred rather than bolted on here.
   return (
     <div className="panel">
       <div className="panel__title">Tachogram (R-R intervals, ms)</div>
-      <svg className="panel__svg" viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none">
+      <svg className="panel__svg panel__svg--wide" viewBox={`0 0 ${VB_W} ${VB_H}`}>
         {xTicks.map((tick, i) => (
           <line key={i} x1={tick.pos} x2={tick.pos} y1={0} y2={plotBottom} className="gridline" />
         ))}
