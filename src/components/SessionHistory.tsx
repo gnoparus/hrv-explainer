@@ -169,10 +169,16 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
                 {s.sdnnMs.toFixed(1)} ms
               </span>
               {confirmDeleteId === s.id ? (
+                // autoFocus on mount, not a ref+effect -- this branch only ever mounts fresh
+                // (React key-swaps it in for the ✕ button below), so the DOM-native "focus
+                // this element when it appears" behavior is exactly what's needed. Cancel
+                // gets it, not Delete -- same reasoning as a native confirm dialog defaulting
+                // focus to the non-destructive option.
                 <div className="session-list__confirm">
                   <button
                     type="button"
                     className="session-list__confirm-cancel"
+                    autoFocus
                     onClick={() => setConfirmDeleteId(null)}
                   >
                     Cancel
