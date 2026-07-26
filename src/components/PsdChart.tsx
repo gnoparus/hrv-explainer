@@ -9,6 +9,24 @@ const F_MAX = 0.5
 const MARGIN_X = 20
 const MARGIN_B = 14
 
+type Point = { f: number; p: number }
+
+// Inserts a linearly-interpolated point at exactly targetF (if not already present) so
+// band segments split from the same continuous series share an exact boundary coordinate
+// -- otherwise adjacent segments (built from disjoint filtered arrays) don't touch and the
+// area drops to baseline at each cut, and a band narrower than the FFT bin spacing can be
+// left with zero interior points.
+function insertBoundary(points: Point[], targetF: number): Point[] {
+  if (points.length === 0 || targetF <= points[0].f || targetF >= points[points.length - 1].f) return points
+  const idx = points.findIndex((p) => p.f > targetF)
+  if (idx <= 0) return points
+  if (points[idx - 1].f === targetF) return points
+  const a = points[idx - 1]
+  const b = points[idx]
+  const t = (targetF - a.f) / (b.f - a.f)
+  return [...points.slice(0, idx), { f: targetF, p: a.p + t * (b.p - a.p) }, ...points.slice(idx)]
+}
+
 export function PsdChart({ psd }: { psd: PsdResult }) {
   const plotBottom = VB_H - MARGIN_B
 
@@ -26,19 +44,21 @@ export function PsdChart({ psd }: { psd: PsdResult }) {
       .domain([0, maxPower * 1.1 || 1])
       .range([plotBottom - 12, 12])
 
-    const points = psd.freqs
-      .map((f, i) => ({ f, p: psd.power[i] }))
-      .filter((d) => d.f <= F_MAX)
+    let points: Point[] = psd.freqs.map((f, i) => ({ f, p: psd.power[i] })).filter((d) => d.f <= F_MAX)
+    points = insertBoundary(points, LF_BAND[0])
+    points = insertBoundary(points, LF_BAND[1])
+    points = insertBoundary(points, HF_BAND[1])
 
-    const gen = d3area<{ f: number; p: number }>()
+    const gen = d3area<Point>()
       .x((d) => x(d.f))
       .y0(plotBottom - 12)
       .y1((d) => y(d.p))
       .curve(curveMonotoneX)
 
     // Split into 4 segments so the trace color follows the band it's over -- teal/amber
-    // where the metrics are computed from, neutral gray for VLF/beyond-HF context.
-    const build = (filter: (d: { f: number; p: number }) => boolean) => gen(points.filter(filter)) ?? ''
+    // where the metrics are computed from, neutral gray for VLF/beyond-HF context. Boundary
+    // points above are shared by the two segments they border, so segments touch exactly.
+    const build = (filter: (d: Point) => boolean) => gen(points.filter(filter)) ?? ''
 
     return {
       lowPath: build((d) => d.f <= LF_BAND[0]),

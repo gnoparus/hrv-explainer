@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 
 // Tap-to-reveal definition, touch-first (no hover dependency).
 const POPOVER_WIDTH = 240
+const VIEWPORT_MARGIN = 8
 
 export function InfoTag({ text }: { text: string }) {
   const [open, setOpen] = useState(false)
-  const [alignRight, setAlignRight] = useState(false)
+  const [popoverLeft, setPopoverLeft] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
@@ -33,8 +34,13 @@ export function InfoTag({ text }: { text: string }) {
         aria-expanded={open}
         onClick={() => {
           if (!open && ref.current) {
+            // Clamp against both viewport edges (not a binary left/right flip) -- a tag
+            // near the left edge can overflow left just as easily as one near the right
+            // edge overflows right once the popover is that wide.
             const rect = ref.current.getBoundingClientRect()
-            setAlignRight(rect.left + POPOVER_WIDTH > window.innerWidth - 16)
+            const minOffset = VIEWPORT_MARGIN - rect.left
+            const maxOffset = window.innerWidth - VIEWPORT_MARGIN - POPOVER_WIDTH - rect.left
+            setPopoverLeft(Math.min(Math.max(0, minOffset), maxOffset))
           }
           setOpen((o) => !o)
         }}
@@ -42,11 +48,7 @@ export function InfoTag({ text }: { text: string }) {
         i
       </button>
       {open && (
-        <span
-          className={`info-tag__popover${alignRight ? ' info-tag__popover--right' : ''}`}
-          role="tooltip"
-          onClick={() => setOpen(false)}
-        >
+        <span className="info-tag__popover" role="tooltip" style={{ left: popoverLeft }} onClick={() => setOpen(false)}>
           {text}
         </span>
       )}

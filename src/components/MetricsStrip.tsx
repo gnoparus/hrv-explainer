@@ -15,6 +15,7 @@ const DELTA_EPSILON = 0.05
 
 function MetricTile({ label, value, unit, colorVar, info, warming }: MetricTileProps) {
   const prevRef = useRef(value)
+  const deltaKeyRef = useRef(0)
   const [delta, setDelta] = useState<'up' | 'down' | null>(null)
 
   useEffect(() => {
@@ -25,6 +26,10 @@ function MetricTile({ label, value, unit, colorVar, info, warming }: MetricTileP
     const diff = value - prevRef.current
     prevRef.current = value
     if (Math.abs(diff) <= DELTA_EPSILON) return
+    // Bump the key so the indicator remounts (and its fade animation restarts) even when
+    // the direction repeats -- otherwise setDelta('up') on an already-'up' state is a no-op
+    // and consecutive same-direction moves after the first show no visible flash at all.
+    deltaKeyRef.current += 1
     setDelta(diff > 0 ? 'up' : 'down')
     const id = setTimeout(() => setDelta(null), 900)
     return () => clearTimeout(id)
@@ -44,7 +49,11 @@ function MetricTile({ label, value, unit, colorVar, info, warming }: MetricTileP
             {value.toFixed(1)}
             <span className="metric-tile__unit">{unit}</span>
             {delta && (
-              <span className={`metric-tile__delta metric-tile__delta--${delta}`} aria-hidden="true">
+              <span
+                key={deltaKeyRef.current}
+                className={`metric-tile__delta metric-tile__delta--${delta}`}
+                aria-hidden="true"
+              >
                 {delta === 'up' ? '▲' : '▼'}
               </span>
             )}

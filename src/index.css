@@ -117,25 +117,6 @@ input[type='range']:focus-visible::-moz-range-thumb {
   }
 }
 
-.export-btn {
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-weight: 500;
-  min-height: 44px;
-}
-
-.export-btn:active {
-  border-color: var(--c-teal);
-}
-
-.export-btn--saved {
-  border-color: var(--c-teal);
-  color: var(--c-teal);
-}
-
 .chart-row {
   flex: 1;
   display: grid;
@@ -292,11 +273,6 @@ input[type='range']:focus-visible::-moz-range-thumb {
   color: var(--text);
   text-transform: none;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-}
-
-.info-tag__popover--right {
-  left: auto;
-  right: 0;
 }
 
 /* ---------- panels / charts ---------- */
