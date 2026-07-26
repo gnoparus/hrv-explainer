@@ -145,10 +145,15 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 @media (max-width: 800px), (orientation: portrait) {
+  /* Deterministic row height, not flex:1 -- mixing flex-shrink with grid's 1fr rows let
+     the browser silently drop the 3rd panel instead of resizing it. The page scrolls as
+     one normal document below this point (via .app's own overflow-y) instead of nesting
+     a second scrollbar inside chart-row -- that nested scroll-within-scroll was the
+     original anti-pattern, not scrolling itself. */
   .chart-row {
+    flex: none;
     grid-template-columns: 1fr;
-    grid-auto-rows: minmax(0, 1fr);
-    overflow: hidden;
+    grid-auto-rows: 200px;
   }
 
   .chart-row .panel__svg--square,
