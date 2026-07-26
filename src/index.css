@@ -103,9 +103,73 @@ input[type='range']:focus-visible::-moz-range-thumb {
   gap: var(--space-2);
 }
 
+.tabbar {
+  display: flex;
+  gap: var(--space-2);
+  flex: none;
+}
+
+.tabbar__tab {
+  min-height: 36px;
+  padding: 6px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tabbar__tab[aria-selected='true'] {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
+.app__tabpanel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: var(--space-5);
+}
+
+/* Explicit override: author-origin `display:flex` above beats the UA stylesheet's
+   `[hidden] { display: none }` at equal specificity, so [hidden] alone does nothing here. */
+.app__tabpanel[hidden] {
+  display: none;
+}
+
+.app__tabpanel--history {
+  overflow-y: auto;
+  padding-top: var(--space-2);
+}
+
 .app__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.save-session-btn {
+  min-height: 36px;
+  padding: 6px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.save-session-btn:active {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
+.save-session-btn:disabled {
+  color: var(--text-dim);
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .app__title {
@@ -203,6 +267,77 @@ input[type='range']:focus-visible::-moz-range-thumb {
   color: var(--text-dim);
   margin-top: 4px;
   letter-spacing: 0.4px;
+}
+
+.window-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.window-toggle button {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.window-toggle button[aria-pressed='true'] {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
+.source-toggle {
+  justify-content: flex-start;
+  margin-bottom: var(--space-3);
+}
+
+.control--upload {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.upload-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.upload-summary__name {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.upload-summary__stats {
+  color: var(--text-dim);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.upload-error {
+  color: var(--c-red);
+  font-size: 13px;
+}
+
+.awaiting-upload {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 240px;
+}
+
+.awaiting-upload p {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin: var(--space-2) 0 0;
 }
 
 @media (max-width: 800px), (orientation: portrait) {
@@ -474,6 +609,69 @@ input[type='range']:focus-visible::-moz-range-thumb {
 .control label strong {
   color: var(--text);
   font-variant-numeric: tabular-nums;
+}
+
+.control__breathing-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pacer-toggle {
+  min-height: 32px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pacer-toggle[aria-pressed='true'] {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
+.breathing-pacer {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.breathing-pacer__ring {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid var(--c-teal);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--c-teal) 50%, transparent);
+  animation-name: pacerBreathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes pacerBreathe {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathing-pacer__ring {
+    animation: none;
+    transform: scale(1.2);
+    opacity: 0.85;
+  }
 }
 
 input[type='range'] {

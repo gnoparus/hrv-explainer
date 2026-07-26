@@ -61,6 +61,11 @@ components:
     textColor: "{colors.ink}"
     rounded: "{rounded.sm}"
     padding: "10px 18px"
+  toggle-group-btn:
+    backgroundColor: "{colors.panel-raised}"
+    textColor: "{colors.ink-dim}"
+    rounded: "{rounded.sm}"
+    padding: "6px 14px"
 ---
 
 # Design System: HRV Explainer
@@ -75,7 +80,10 @@ decision serves one goal — a thesis-defense audience or a student dragging a
 slider should *see the physiology happen*, not read a caption explaining it.
 Density stays low and the layout stays single-screen: no navigation, no
 scrolling mid-demo, nothing between the presenter's hand and the result on
-screen.
+screen. A Live/History tab bar is the one accepted exception (added for
+session-history/trend tracking, a secondary need for the self-learner
+audience) — the Live tab is still the single, no-scroll instrument described
+above; switching tabs is opt-in and never required during the live-demo flow.
 
 This system explicitly rejects the generic SaaS-dashboard look (cream
 backgrounds, card grids, gradient text, hero-metric tiles) and the static
@@ -110,7 +118,7 @@ Three saturated signal colors on a near-black instrument panel; no filler hues.
 - **Ink** (#d7e2ea): primary text and active values.
 - **Ink Dim** (#7c8fa0): labels, units, captions, uppercase eyebrows — anything secondary.
 
-A fourth color, `--c-red` (#ff6b6b), is declared in tokens but not yet used anywhere in the UI. Treat it as reserved for a future error/alert state; don't repurpose it for anything else without updating this doc.
+A fourth color, `--c-red` (#ff6b6b), is reserved for error/alert states — its one use today is the file-upload parse-error message. Don't repurpose it for anything else without updating this doc.
 
 ### Named Rules
 **The Three-Signal Rule.** Only teal, violet, and amber ever represent data. If a fourth data series is ever added, do not reach for a new hue — reuse one of the three with a different visual encoding (dash pattern, opacity) before introducing a new color.
@@ -167,13 +175,16 @@ Instrument-panel components: flat, bordered, low-radius, glow on the data — ne
 - **Thumb:** 30px white circle, 3px teal border, teal glow shadow — always the largest touch target on screen (44px hit area via the input's own height)
 - **No focus ring is styled**; treat this as a gap to close under `/impeccable harden` or `/impeccable audit`, not an intentional omission
 
+### Toggle Group (tab bar, window toggle, source toggle)
+Two-or-three-way exclusive choice, all sharing one CSS shape (`.window-toggle`/`.tabbar` in `src/index.css`): bordered-panel buttons (Panel Raised background, 1px hairline), the selected option's border and text shift to signal teal (`aria-pressed`/`aria-selected`), unselected options stay `--text-dim`. Used for the Live/History tab bar, the metrics-window toggle (60s live / 5-min clinical), and the data-source toggle (Simulated / Uploaded). Same rule as Buttons above: no filled/CTA treatment, no second selected-state color — teal is the one "active" signal across every toggle group in the app.
+
 ### Info Tag (signature component)
 Tap-to-reveal definition popover (deliberately touch-first, no hover dependency — see the component's own comment). A 20px circular "i" button in ink-dim; tapping reveals a 240px popover in Panel Raised with the one true drop-shadow in the system. Used to carry the physiology explanations (e.g. why LF/HF is contested) without cluttering the metric tile itself.
 
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** keep the whole experience on one screen with no navigation or scrolling during a live demo.
+- **Do** keep the Live tab a single screen with no scrolling during a live demo — the Live/History tab bar is the one accepted navigation exception, and it must never be required mid-demo.
 - **Do** use tabular-nums on every value that updates in real time.
 - **Do** reserve signal glow (drop-shadow / text-shadow in the data's own color) for things that are actually live data, not decoration.
 - **Do** keep buttons at the single bordered-panel treatment; don't invent a second, higher-emphasis button style.

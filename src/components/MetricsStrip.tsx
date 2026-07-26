@@ -64,22 +64,56 @@ function MetricTile({ label, value, unit, colorVar, info, warming }: MetricTileP
   )
 }
 
+export type MetricsWindow = 'live' | 'clinical'
+
 export function MetricsStrip({
   rmssdMs,
   sdnnMs,
   lfPower,
   hfPower,
   beatCount,
+  metricsWindow,
+  onMetricsWindowChange,
+  clinicalReadySec,
+  isLiveSource,
 }: {
   rmssdMs: number
   sdnnMs: number
   lfPower: number
   hfPower: number
   beatCount: number
+  metricsWindow: MetricsWindow
+  onMetricsWindowChange: (w: MetricsWindow) => void
+  clinicalReadySec: number
+  isLiveSource: boolean
 }) {
-  const warming = beatCount < 8
+  const isClinical = metricsWindow === 'clinical'
+  // "Gathering" only makes sense for the live simulator, whose buffer is still filling.
+  // An uploaded file is a fixed dataset -- if it's shorter than the window, that's just its
+  // real duration, not a value waiting to arrive, so uploaded sources never show this state.
+  const warming = isLiveSource && (isClinical ? clinicalReadySec < 300 : beatCount < 8)
+  const caption = warming
+    ? isClinical
+      ? `gathering… ${Math.floor(clinicalReadySec)}/300s`
+      : 'collecting baseline…'
+    : isClinical
+      ? clinicalReadySec >= 300 || isLiveSource
+        ? 'rolling 5-min window (clinical standard)'
+        : `full recording (${Math.floor(clinicalReadySec)}s, shorter than the 5-min standard)`
+      : isLiveSource || clinicalReadySec >= 60
+        ? 'rolling 60s window'
+        : `full recording (${Math.floor(clinicalReadySec)}s)`
+
   return (
     <div className="metrics-strip-wrap">
+      <div className="window-toggle" role="group" aria-label="Metrics window">
+        <button type="button" aria-pressed={!isClinical} onClick={() => onMetricsWindowChange('live')}>
+          60s live
+        </button>
+        <button type="button" aria-pressed={isClinical} onClick={() => onMetricsWindowChange('clinical')}>
+          5 min clinical
+        </button>
+      </div>
       {/* 3 columns mirror chart-row below: RMSSD sits above the Tachogram it summarizes,
           HF+LF sit paired above the one PSD chart they're both read from, SDNN sits above
           the Poincaré spread it summarizes. */}
@@ -119,7 +153,7 @@ export function MetricsStrip({
           info="SD of all RR intervals in the window -- total variability, both autonomic branches, not vagal-specific."
         />
       </div>
-      <div className="metrics-strip__caption">{warming ? 'collecting baseline…' : 'rolling 60s window'}</div>
+      <div className="metrics-strip__caption">{caption}</div>
     </div>
   )
 }

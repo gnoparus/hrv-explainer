@@ -27,7 +27,8 @@ function insertBoundary(points: Point[], targetF: number): Point[] {
   return [...points.slice(0, idx), { f: targetF, p: a.p + t * (b.p - a.p) }, ...points.slice(idx)]
 }
 
-export function PsdChart({ psd }: { psd: PsdResult }) {
+export function PsdChart({ psd, windowSeconds }: { psd: PsdResult; windowSeconds: number }) {
+  const windowLabel = windowSeconds === 300 ? 'last 5 min' : `last ${windowSeconds}s`
   const plotBottom = VB_H - MARGIN_B
 
   const { lowPath, lfPath, hfPath, highPath, lowLine, lfLine, hfLine, highLine, x, lfRect, hfRect, hzTicks } =
@@ -92,7 +93,7 @@ export function PsdChart({ psd }: { psd: PsdResult }) {
 
   return (
     <div className="panel">
-      <div className="panel__title">Frequency spectrum (PSD, Hz, last 60s)</div>
+      <div className="panel__title">Frequency spectrum (PSD, Hz, {windowLabel})</div>
       <svg className="panel__svg panel__svg--wide" viewBox={`0 0 ${VB_W} ${VB_H}`}>
         {warming ? (
           <text x={VB_W / 2} y={VB_H / 2} textAnchor="middle" className="band-label">

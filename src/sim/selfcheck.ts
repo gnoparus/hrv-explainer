@@ -4,6 +4,7 @@ import assert from 'node:assert'
 import { rmssd, sdnn } from './metrics.js'
 import { computePsd, bandPower, LF_BAND, HF_BAND } from './psd.js'
 import { RRGenerator, mulberry32 } from './rrGenerator.js'
+import { parseRRText } from './parseRRFile.js'
 
 function approxEqual(a: number, b: number, tol: number, label: string) {
   assert(Math.abs(a - b) < tol, `${label}: expected ~${b}, got ${a}`)
@@ -90,6 +91,45 @@ function simulateRmssd(breathingRateBrpm: number, seed: number): number {
     `expected mean RMSSD across 6-12 breaths/min to be unimodal (at most 1 direction change), got ${signChanges} -- values: ${avgCurve.map((v) => v.toFixed(1)).join(', ')}`,
   )
   console.log(`[ok] RMSSD unimodal (no wobble) across 6-12/min resonance zone (${seeds.length}-seed mean): ${avgCurve.map((v) => v.toFixed(1)).join(', ')}`)
+}
+
+
+// 5. Clinical (5-min) vs live (60s) metrics windows must actually be computed over different
+// slices, not the same one wired twice -- regression guard for the window-toggle feature.
+{
+  const gen = new RRGenerator(mulberry32(7))
+  const points: { t: number; rrMs: number }[] = []
+  while (gen.elapsedSeconds < 300) {
+    const beat = gen.nextBeat({ baselineRRms: 800, breathingRateBrpm: 12, vagalTone: 0.6 })
+    points.push(beat)
+  }
+  const lastT = points[points.length - 1].t
+  const liveSlice = points.filter((p) => p.t >= lastT - 60)
+  const clinicalRmssd = rmssd(points.map((p) => p.rrMs))
+  const liveRmssd = rmssd(liveSlice.map((p) => p.rrMs))
+  assert(liveSlice.length < points.length, 'expected the 60s live slice to hold fewer beats than the 5-min buffer')
+  assert(
+    Math.abs(clinicalRmssd - liveRmssd) > 0.01,
+    `expected clinical (${clinicalRmssd.toFixed(2)}) and live (${liveRmssd.toFixed(2)}) RMSSD to differ -- looks like both windows are computed over the same slice`,
+  )
+  console.log(
+    `[ok] clinical (${clinicalRmssd.toFixed(1)}ms, n=${points.length}) and live (${liveRmssd.toFixed(1)}ms, n=${liveSlice.length}) windows are computed independently`,
+  )
+}
+
+// 6. RR-file parser: plain ms, seconds-conversion, and last-token-per-line extraction.
+{
+  const plain = parseRRText('812\n798\n805\n', 'plain.txt')
+  approxEqual(plain.points[0].rrMs, 812, 0.001, 'parseRRText plain ms passthrough')
+  approxEqual(plain.points[1].t, (812 + 798) / 1000, 0.001, 'parseRRText cumulative time')
+
+  const seconds = parseRRText('0.812\n0.798\n0.805\n', 'seconds.txt')
+  approxEqual(seconds.points[0].rrMs, 812, 0.001, 'parseRRText seconds-to-ms conversion')
+
+  const withIndex = parseRRText('1,812\n2,798\n3,805\n', 'indexed.csv')
+  approxEqual(withIndex.points[0].rrMs, 812, 0.001, 'parseRRText last-token extraction with leading index column')
+
+  console.log('[ok] parseRRText: plain ms, seconds conversion, and indexed-column extraction all correct')
 }
 
 console.log('\nAll self-checks passed.')
