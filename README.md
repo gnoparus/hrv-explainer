@@ -11,6 +11,23 @@ Add `?preset=<key>` to the URL to jump straight to a named scenario instead
 of dragging sliders live (`young-athlete`, `stressed-older` — see
 `src/sim/presets.ts`).
 
+## Features
+
+- **Live tab** — the simulator: drag breathing rate/vagal tone, watch RMSSD,
+  SDNN, LF/HF, tachogram, PSD, and Poincaré plot respond in real time.
+- **Metrics window toggle** ("60s live" / "5 min clinical") — switch the
+  metrics strip and PSD chart between the fast 60s window and the clinical
+  5-minute standard.
+- **Data source toggle** ("Simulated" / "Uploaded") — swap the RR-interval
+  simulator for a real recording (CSV/txt, one RR value per line —
+  `src/sim/parseRRFile.ts`). Sliders are replaced by a file picker while a
+  file is loaded; all charts and metrics run on the uploaded series unchanged.
+- **Breathing pacer** — an optional expanding/contracting ring paced to the
+  breathing-rate slider, for a felt (not just numeric) resonance demo.
+- **History tab** — save a session snapshot (params + metrics) to
+  `localStorage`, compare up to 3 saved sessions side by side, and see an
+  RMSSD trend across all saved sessions.
+
 ## Physiology model
 
 `src/sim/rrGenerator.ts` generates R-R intervals from two oscillators:
@@ -88,6 +105,16 @@ permission).
   number.
 - Export snapshot captures the three SVG charts only, not panel titles or the
   metrics strip.
+- Session history (`localStorage`, capped at 20) is per-browser, per-device —
+  no export, sync, or account. Clearing site data clears it.
+- The uploaded-file parser (`src/sim/parseRRFile.ts`) supports one RR value
+  per line (optionally with a leading index/timestamp column — it reads the
+  last numeric token per line), auto-detecting seconds vs. milliseconds by
+  magnitude. It does not handle multi-column formats with a trailing
+  quality-flag column, or binary export formats.
+- Live capture from a Bluetooth heart-rate strap and an alternate AR/Burg
+  frequency-domain method are tracked as open issues (#24, #25) but not
+  implemented — the file-upload path above is the only real-data input today.
 
 ## PWA / offline
 

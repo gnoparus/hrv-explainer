@@ -1,13 +1,15 @@
-import { useState, type KeyboardEvent } from 'react'
-import { useHrvSimulation } from './sim/useHrvSimulation'
+import { useMemo, useState, type KeyboardEvent } from 'react'
+import { useHrvSimulation, snapshotFromPoints } from './sim/useHrvSimulation'
 import { MetricsStrip } from './components/MetricsStrip'
 import { Controls } from './components/Controls'
+import { UploadControls } from './components/UploadControls'
 import { Tachogram } from './components/Tachogram'
 import { PsdChart } from './components/PsdChart'
 import { PoincarePlot } from './components/PoincarePlot'
 import { getPreset } from './sim/presets'
 import { loadSessions, saveSession, deleteSession } from './sim/sessionStore'
 import { SessionHistory } from './components/SessionHistory'
+import type { ParsedRR } from './sim/parseRRFile'
 
 // Read once at module load, not per-render -- the URL doesn't change under this single-screen app.
 const initialPreset = getPreset(new URLSearchParams(window.location.search).get('preset'))
@@ -25,7 +27,18 @@ function App() {
   const [showPacer, setShowPacer] = useState(false)
   const [tab, setTab] = useState<TabKey>('live')
   const [sessions, setSessions] = useState(loadSessions)
-  const snapshot = useHrvSimulation({ breathingRateBrpm, vagalTone })
+  const [source, setSource] = useState<'simulated' | 'uploaded'>('simulated')
+  const [uploadedData, setUploadedData] = useState<ParsedRR | null>(null)
+
+  // Always run the simulator (hooks can't be conditional) -- its output is simply unused
+  // while an uploaded file is the active source.
+  const liveSnapshot = useHrvSimulation({ breathingRateBrpm, vagalTone })
+  const uploadedSnapshot = useMemo(
+    () => (uploadedData ? snapshotFromPoints(uploadedData.points) : null),
+    [uploadedData],
+  )
+  const awaitingUpload = source === 'uploaded' && !uploadedSnapshot
+  const snapshot = source === 'uploaded' && uploadedSnapshot ? uploadedSnapshot : liveSnapshot
   const active = metricsWindow === 'clinical' ? snapshot.clinical : snapshot.live
 
   function handleSave() {
@@ -83,38 +96,71 @@ function App() {
               <span className="pulse-dot" key={snapshot.beatCount} />
               HRV Explainer
             </div>
-            <button type="button" className="save-session-btn" onClick={handleSave}>
-              Save session
-            </button>
+            {source === 'simulated' && (
+              <button type="button" className="save-session-btn" onClick={handleSave}>
+                Save session
+              </button>
+            )}
           </header>
 
-          <MetricsStrip
-            rmssdMs={active.rmssdMs}
-            sdnnMs={active.sdnnMs}
-            lfPower={active.lfPower}
-            hfPower={active.hfPower}
-            beatCount={snapshot.beatCount}
-            metricsWindow={metricsWindow}
-            onMetricsWindowChange={setMetricsWindow}
-            clinicalReadySec={snapshot.clinicalReadySec}
-          />
+          {awaitingUpload ? (
+            <div className="panel awaiting-upload">
+              <div className="panel__title">No file loaded</div>
+              <p>Choose an RR-interval file below to see its metrics and charts here.</p>
+            </div>
+          ) : (
+            <>
+              <MetricsStrip
+                rmssdMs={active.rmssdMs}
+                sdnnMs={active.sdnnMs}
+                lfPower={active.lfPower}
+                hfPower={active.hfPower}
+                beatCount={snapshot.beatCount}
+                metricsWindow={metricsWindow}
+                onMetricsWindowChange={setMetricsWindow}
+                clinicalReadySec={snapshot.clinicalReadySec}
+                isLiveSource={source === 'simulated'}
+              />
 
-          <div className="chart-row">
-            <Tachogram points={snapshot.points} />
-            <PsdChart psd={active.psd} windowSeconds={metricsWindow === 'clinical' ? 300 : 60} />
-            <PoincarePlot points={snapshot.points} />
-          </div>
+              <div className="chart-row">
+                <Tachogram points={snapshot.points} />
+                <PsdChart psd={active.psd} windowSeconds={metricsWindow === 'clinical' ? 300 : 60} />
+                <PoincarePlot points={snapshot.points} />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="controls-bar">
-          <Controls
-            breathingRateBrpm={breathingRateBrpm}
-            vagalTone={vagalTone}
-            onBreathingRateChange={setBreathingRateBrpm}
-            onVagalToneChange={setVagalTone}
-            showPacer={showPacer}
-            onTogglePacer={() => setShowPacer((v) => !v)}
-          />
+          <div className="window-toggle source-toggle" role="group" aria-label="Data source">
+            <button
+              type="button"
+              aria-pressed={source === 'simulated'}
+              onClick={() => setSource('simulated')}
+            >
+              Simulated
+            </button>
+            <button
+              type="button"
+              aria-pressed={source === 'uploaded'}
+              onClick={() => setSource('uploaded')}
+            >
+              Uploaded
+            </button>
+          </div>
+
+          {source === 'simulated' ? (
+            <Controls
+              breathingRateBrpm={breathingRateBrpm}
+              vagalTone={vagalTone}
+              onBreathingRateChange={setBreathingRateBrpm}
+              onVagalToneChange={setVagalTone}
+              showPacer={showPacer}
+              onTogglePacer={() => setShowPacer((v) => !v)}
+            />
+          ) : (
+            <UploadControls onLoaded={setUploadedData} />
+          )}
         </div>
       </div>
 

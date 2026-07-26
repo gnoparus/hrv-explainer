@@ -75,6 +75,7 @@ export function MetricsStrip({
   metricsWindow,
   onMetricsWindowChange,
   clinicalReadySec,
+  isLiveSource,
 }: {
   rmssdMs: number
   sdnnMs: number
@@ -84,18 +85,24 @@ export function MetricsStrip({
   metricsWindow: MetricsWindow
   onMetricsWindowChange: (w: MetricsWindow) => void
   clinicalReadySec: number
+  isLiveSource: boolean
 }) {
   const isClinical = metricsWindow === 'clinical'
-  // Live warms up on beat count (fast, ~8 beats); clinical warms up on buffered duration
-  // (slow, the full 5-min window) -- two different readiness signals for two different windows.
-  const warming = isClinical ? clinicalReadySec < 300 : beatCount < 8
+  // "Gathering" only makes sense for the live simulator, whose buffer is still filling.
+  // An uploaded file is a fixed dataset -- if it's shorter than the window, that's just its
+  // real duration, not a value waiting to arrive, so uploaded sources never show this state.
+  const warming = isLiveSource && (isClinical ? clinicalReadySec < 300 : beatCount < 8)
   const caption = warming
     ? isClinical
       ? `gathering… ${Math.floor(clinicalReadySec)}/300s`
       : 'collecting baseline…'
     : isClinical
-      ? 'rolling 5-min window (clinical standard)'
-      : 'rolling 60s window'
+      ? clinicalReadySec >= 300 || isLiveSource
+        ? 'rolling 5-min window (clinical standard)'
+        : `full recording (${Math.floor(clinicalReadySec)}s, shorter than the 5-min standard)`
+      : isLiveSource || clinicalReadySec >= 60
+        ? 'rolling 60s window'
+        : `full recording (${Math.floor(clinicalReadySec)}s)`
 
   return (
     <div className="metrics-strip-wrap">

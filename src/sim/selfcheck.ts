@@ -4,6 +4,7 @@ import assert from 'node:assert'
 import { rmssd, sdnn } from './metrics.js'
 import { computePsd, bandPower, LF_BAND, HF_BAND } from './psd.js'
 import { RRGenerator, mulberry32 } from './rrGenerator.js'
+import { parseRRText } from './parseRRFile.js'
 
 function approxEqual(a: number, b: number, tol: number, label: string) {
   assert(Math.abs(a - b) < tol, `${label}: expected ~${b}, got ${a}`)
@@ -114,6 +115,21 @@ function simulateRmssd(breathingRateBrpm: number, seed: number): number {
   console.log(
     `[ok] clinical (${clinicalRmssd.toFixed(1)}ms, n=${points.length}) and live (${liveRmssd.toFixed(1)}ms, n=${liveSlice.length}) windows are computed independently`,
   )
+}
+
+// 6. RR-file parser: plain ms, seconds-conversion, and last-token-per-line extraction.
+{
+  const plain = parseRRText('812\n798\n805\n', 'plain.txt')
+  approxEqual(plain.points[0].rrMs, 812, 0.001, 'parseRRText plain ms passthrough')
+  approxEqual(plain.points[1].t, (812 + 798) / 1000, 0.001, 'parseRRText cumulative time')
+
+  const seconds = parseRRText('0.812\n0.798\n0.805\n', 'seconds.txt')
+  approxEqual(seconds.points[0].rrMs, 812, 0.001, 'parseRRText seconds-to-ms conversion')
+
+  const withIndex = parseRRText('1,812\n2,798\n3,805\n', 'indexed.csv')
+  approxEqual(withIndex.points[0].rrMs, 812, 0.001, 'parseRRText last-token extraction with leading index column')
+
+  console.log('[ok] parseRRText: plain ms, seconds conversion, and indexed-column extraction all correct')
 }
 
 console.log('\nAll self-checks passed.')

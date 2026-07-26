@@ -38,6 +38,24 @@ const EMPTY_SNAPSHOT: HrvSnapshot = {
   clinicalReadySec: 0,
 }
 
+// Builds an HrvSnapshot from a fixed RR series (e.g. an uploaded file) instead of the live
+// generator loop -- same live/clinical tail-window semantics as the simulator, just computed
+// once instead of on every beat.
+export function snapshotFromPoints(points: { t: number; rrMs: number }[]): HrvSnapshot {
+  if (points.length === 0) return EMPTY_SNAPSHOT
+  const lastT = points[points.length - 1].t
+  const firstT = points[0].t
+  const recent = points.filter((p) => p.t >= lastT - METRICS_WINDOW_SECONDS)
+  const clinicalWindow = points.filter((p) => p.t >= lastT - CLINICAL_WINDOW_SECONDS)
+  return {
+    points,
+    beatCount: points.length,
+    live: computeWindowMetrics(recent),
+    clinical: computeWindowMetrics(clinicalWindow),
+    clinicalReadySec: Math.min(CLINICAL_WINDOW_SECONDS, lastT - firstT),
+  }
+}
+
 function computeWindowMetrics(points: { t: number; rrMs: number }[]): WindowMetrics {
   const rrValues = points.map((p) => p.rrMs)
   const times = points.map((p) => p.t)
