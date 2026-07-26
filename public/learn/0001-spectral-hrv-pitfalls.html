@@ -66,8 +66,12 @@ would predict. That contradiction is the demo.
 
 <div class="freq-axis">
   <div class="freq-axis__track">
-    <div class="freq-axis__band" id="band-lf" style="background:#c98a2e; flex: 0.11 0 0;">LF band (0.04–0.15 Hz)</div>
-    <div class="freq-axis__band" id="band-hf" style="background:#0e9a86; flex: 0.25 0 0;">HF band (0.15–0.4 Hz)</div>
+    <!-- flex-grow values scaled to sum >= 1 (11+25, not 0.11+0.25) -- CSS only distributes
+         free space proportional to the SUM of flex-grow factors when that sum is under 1,
+         leaving the remainder of the track empty; the marker's position math below assumes
+         these two bands fill the full 0-100% of the track. -->
+    <div class="freq-axis__band" id="band-lf" style="background:#ffc857; flex: 11 0 0;">LF <span class="freq-axis__band-detail">(0.04–0.15 Hz)</span></div>
+    <div class="freq-axis__band" id="band-hf" style="background:#2fe7c9; flex: 25 0 0;">HF <span class="freq-axis__band-detail">(0.15–0.4 Hz)</span></div>
   </div>
   <div class="freq-axis__marker" id="freq-marker"></div>
 </div>
@@ -75,8 +79,8 @@ would predict. That contradiction is the demo.
 
 <svg id="power-chart" viewBox="0 0 640 150" preserveAspectRatio="xMidYMid meet" style="margin-top: 0.6rem;"></svg>
 <div class="legend">
-  <span><span class="swatch block" style="background:#c98a2e"></span>LF power (baroreflex floor + respiration, if peak is here)</span>
-  <span><span class="swatch block" style="background:#0e9a86"></span>HF power (respiration, if peak is here)</span>
+  <span><span class="swatch block" style="background:#ffc857"></span>LF power (baroreflex floor + respiration, if peak is here)</span>
+  <span><span class="swatch block" style="background:#2fe7c9"></span>HF power (respiration, if peak is here)</span>
 </div>
 
 <div class="readout">
@@ -178,7 +182,7 @@ function checkAnswer(inputId, accepted, feedbackId) {
     var scale = (H - PAD * 2) / HRV_MODEL.MAX_BAND_POWER;
     var barsX = [W / 2 - GAP / 2 - BAR_W, W / 2 + GAP / 2];
     var powers = [lfPower, hfPower];
-    var colors = ['#c98a2e', '#0e9a86'];
+    var colors = ['#ffc857', '#2fe7c9'];
     var labels = ['LF', 'HF'];
 
     for (var i = 0; i < 2; i++) {
@@ -194,7 +198,7 @@ function checkAnswer(inputId, accepted, feedbackId) {
       chart.appendChild(t);
     }
     chart.appendChild(el('line', {
-      x1: PAD, x2: W - PAD, y1: H - PAD, y2: H - PAD, stroke: '#d8d4c8',
+      x1: PAD, x2: W - PAD, y1: H - PAD, y2: H - PAD, stroke: '#1b2733',
     }));
   }
 
@@ -209,7 +213,7 @@ function checkAnswer(inputId, accepted, feedbackId) {
     marker.style.left = pct + '%';
 
     whichBand.textContent = split.isHf ? 'HF' : 'LF';
-    whichBand.style.color = split.isHf ? '#0e9a86' : '#c98a2e';
+    whichBand.style.color = split.isHf ? '#2fe7c9' : '#ffc857';
 
     drawChart(split.lfPower, split.hfPower);
 

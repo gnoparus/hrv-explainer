@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png'],
       manifest: {
-        name: 'HRV Explainer',
-        short_name: 'HRV Explainer',
+        name: 'HRV Simulator',
+        short_name: 'HRV Simulator',
         description: 'Interactive R-R interval / HRV simulator',
         theme_color: '#05080b',
         background_color: '#05080b',

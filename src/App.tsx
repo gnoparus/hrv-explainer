@@ -100,7 +100,7 @@ function App() {
           <header className="app__header">
             <div className="app__title">
               <span className="pulse-dot" key={snapshot.beatCount} />
-              HRV Explainer
+              HRV Simulator
             </div>
             {source === 'simulated' && (
               <button

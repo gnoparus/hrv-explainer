@@ -111,7 +111,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .tabbar__tab {
   min-height: 36px;
-  padding: 6px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -152,7 +152,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .save-session-btn {
   min-height: 36px;
-  padding: 6px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -280,6 +280,31 @@ input[type='range']:focus-visible::-moz-range-thumb {
   letter-spacing: 0.6px;
 }
 
+.metrics-strip__pair-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.metrics-strip__ar-toggle {
+  min-height: 36px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.metrics-strip__ar-toggle[aria-pressed='true'] {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
 .metrics-strip__caption {
   text-align: right;
   font-size: 11px;
@@ -297,7 +322,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .window-toggle button {
   min-height: 36px;
-  padding: 6px 14px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -460,6 +485,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .info-tag__btn {
+  position: relative;
   width: 20px;
   height: 20px;
   border-radius: 999px;
@@ -473,6 +499,16 @@ input[type='range']:focus-visible::-moz-range-thumb {
   align-items: center;
   justify-content: center;
   min-width: 20px;
+}
+
+/* Keeps the documented 20px visual size (DESIGN.md's Info Tag spec) while meeting the
+   44px touch-target minimum -- an invisible hit-area, not a bigger circle. Safe at both
+   call sites (metric-tile head, PSD panel title): neither has another interactive
+   element close enough to overlap the expanded 44px zone. */
+.info-tag__btn::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
 }
 
 .info-tag__popover {
@@ -707,8 +743,8 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .pacer-toggle {
-  min-height: 32px;
-  padding: 4px 12px;
+  min-height: 36px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -802,7 +838,7 @@ input[type='range']::-webkit-slider-thumb {
 .control__number {
   width: 64px;
   flex: none;
-  min-height: 32px;
+  min-height: 44px;
   padding: 4px 8px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -822,6 +858,16 @@ input[type='range']::-webkit-slider-thumb {
 .control__number:focus-visible {
   outline: 2px solid var(--c-teal);
   outline-offset: 1px;
+}
+
+/* Typed value is out of range and about to be clamped -- the app already applied the
+   clamped value (chart/label moved), so this flags the mismatch instead of silently
+   reverting the text mid-keystroke. Dashed border, not a new hue: the three signal colors
+   stay reserved for data (DESIGN.md's Three-Signal Rule), and this isn't an error state,
+   so --c-red doesn't apply either. */
+.control__number--clamped {
+  border-style: dashed;
+  border-color: var(--text-dim);
 }
 
 .control--presets {
@@ -1023,5 +1069,18 @@ input[type='range']::-webkit-slider-thumb {
 
   .controls {
     padding: 8px 16px;
+  }
+
+  /* Toggling the pacer on adds ~50px (28px ring at up to 1.8x scale + margin) that the
+     budget above doesn't otherwise account for -- shrink it here so enabling it can't push
+     the page past the viewport and force the exact mid-demo scroll this fallback exists to
+     prevent. */
+  .breathing-pacer {
+    margin-top: var(--space-1);
+  }
+
+  .breathing-pacer__ring {
+    width: 20px;
+    height: 20px;
   }
 }

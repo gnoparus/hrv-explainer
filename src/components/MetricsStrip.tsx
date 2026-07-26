@@ -94,6 +94,7 @@ export function MetricsStrip({
   clinicalReadySec: number
   isLiveSource: boolean
 }) {
+  const [showAr, setShowAr] = useState(false)
   const isClinical = metricsWindow === 'clinical'
   // "Gathering" only makes sense for the live simulator, whose buffer is still filling.
   // An uploaded file is a fixed dataset -- if it's shorter than the window, that's just its
@@ -129,10 +130,10 @@ export function MetricsStrip({
     <div className="metrics-strip-wrap">
       <div className="window-toggle" role="group" aria-label="Metrics window">
         <button type="button" aria-pressed={!isClinical} onClick={() => onMetricsWindowChange('live')}>
-          60s live
+          60s Live
         </button>
         <button type="button" aria-pressed={isClinical} onClick={() => onMetricsWindowChange('clinical')}>
-          5 min clinical
+          5 min Clinical
         </button>
       </div>
       {/* 3 columns mirror chart-row below: RMSSD sits above the Tachogram it summarizes,
@@ -149,7 +150,20 @@ export function MetricsStrip({
           info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome, well-validated in cardiology and oncology (Martinez et al. 2024). HRV declines with chronological age (Choi et al. 2020), and paced-breathing HRV has been proposed as a marker of biological, not just chronological, age (Russoniello et al. 2013) -- a trend worth watching across sessions, not a fixed trajectory."
         />
         <div className="metrics-strip__pair-group">
-          <span className="metrics-strip__pair-group-label">FFT periodogram</span>
+          <div className="metrics-strip__pair-group-head">
+            <span className="metrics-strip__pair-group-label">FFT periodogram</span>
+            {/* Burg AR starts hidden -- shown together the two estimates push the strip to 6
+                tiles, past the 4-item chunking limit for a single glance. AR is a diagnostic
+                cross-check (see its own info copy), not a primary reading, so it's opt-in. */}
+            <button
+              type="button"
+              className="metrics-strip__ar-toggle"
+              aria-pressed={showAr}
+              onClick={() => setShowAr((v) => !v)}
+            >
+              {showAr ? 'Hide Burg AR' : 'Compare Burg AR'}
+            </button>
+          </div>
           <div className="metrics-strip__pair">
             <MetricTile
               label="HF power"
@@ -158,7 +172,7 @@ export function MetricsStrip({
               colorVar="--c-teal"
               warming={warming}
               live={live}
-              info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises. Two estimates shown below: FFT/Hann periodogram (a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
+              info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises. FFT/Hann periodogram: a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method. Tap 'Compare Burg AR' above for a second estimate; expect close agreement, a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
             />
             <MetricTile
               label="LF power"
@@ -167,30 +181,34 @@ export function MetricsStrip({
               colorVar="--c-amber"
               warming={warming}
               live={live}
-              info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index. Two estimates shown below: FFT/Hann periodogram (a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
+              info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index. FFT/Hann periodogram: a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method. Tap 'Compare Burg AR' above for a second estimate; expect close agreement, a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
             />
           </div>
-          <span className="metrics-strip__pair-group-label">Burg AR (order {arOrder})</span>
-          <div className="metrics-strip__pair">
-            <MetricTile
-              label="HF power"
-              value={hfPowerAr}
-              unit="ms²"
-              colorVar="--c-teal"
-              warming={warming}
-              live={live}
-              info="Same 0.15-0.4 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
-            />
-            <MetricTile
-              label="LF power"
-              value={lfPowerAr}
-              unit="ms²"
-              colorVar="--c-amber"
-              warming={warming}
-              live={live}
-              info="Same 0.04-0.15 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
-            />
-          </div>
+          {showAr && (
+            <>
+              <span className="metrics-strip__pair-group-label">Burg AR (order {arOrder})</span>
+              <div className="metrics-strip__pair">
+                <MetricTile
+                  label="HF power"
+                  value={hfPowerAr}
+                  unit="ms²"
+                  colorVar="--c-teal"
+                  warming={warming}
+                  live={live}
+                  info="Same 0.15-0.4 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
+                />
+                <MetricTile
+                  label="LF power"
+                  value={lfPowerAr}
+                  unit="ms²"
+                  colorVar="--c-amber"
+                  warming={warming}
+                  live={live}
+                  info="Same 0.04-0.15 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
+                />
+              </div>
+            </>
+          )}
         </div>
         <MetricTile
           label="SDNN"
