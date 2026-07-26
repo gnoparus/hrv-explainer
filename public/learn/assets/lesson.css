@@ -1,0 +1,370 @@
+/* Shared stylesheet for all lessons and reference docs in this workspace.
+   Tokens mirror the main app's DESIGN.md system (void/panel/hairline,
+   teal/violet/amber signal colors, single system sans) so this reading
+   surface reads as the same instrument, not a separate paper handout. */
+
+:root {
+  --ink: #d7e2ea;
+  --ink-dim: #7c8fa0;
+  --paper: #05080b;
+  --panel: #0b1117;
+  --panel-raised: #0e161d;
+  /* Slightly brighter than the app's own --border/hairline (#1b2733) -- the app only ever
+     draws hairlines between two panel surfaces, never straight onto --void. This stylesheet
+     draws structural dividers (h2 underlines, table rows, .nav) directly on the page body,
+     which is --paper/void here, so the same hex would be nearly invisible on this surface. */
+  --rule: #293a4a;
+  --accent: #ffc857;
+  --error: #ff6b6b;
+  --link: #b18bff;
+  --good: #2fe7c9;
+  --teal: #2fe7c9;
+  --sans: -apple-system, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: "SF Mono", "Menlo", "Consolas", monospace;
+
+  /* Without this, native controls (range sliders, in particular) keep rendering their
+     light-mode UA styling -- a white-filled slider track was the brightest thing on the
+     page after the token flip to a dark background. Matches src/index.css. */
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  max-width: 42em;
+  padding: 3rem 1.5rem 5rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 19px;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  font-family: var(--sans);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 1.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-family: var(--sans);
+  color: var(--ink-dim);
+  font-size: 1rem;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin-top: 2.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.3rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin-top: 1.5rem;
+}
+
+p, li { max-width: 38em; }
+
+a { color: var(--link); }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: var(--panel-raised);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+/* Contested-claim callout: use for statements that look authoritative but
+   are known to be disputed in the literature. Full border + background tint,
+   not a side-stripe -- border-left accents are an anti-pattern regardless of
+   register (see the parent skill's absolute-ban list). Amber matches
+   DESIGN.md's own "interpret with caution" role for the contested metric. */
+.contested {
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  margin: 1.5rem 0;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+}
+
+.contested strong {
+  display: block;
+  font-family: var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+/* Numbered footnote-style citations */
+.citations {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+.citations ol { padding-left: 1.3rem; }
+.citations li { margin-bottom: 0.5rem; }
+
+/* Retrieval-practice quiz block */
+.quiz {
+  background: var(--panel-raised);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  margin: 1.8rem 0;
+  font-family: var(--sans);
+}
+
+.quiz h3 { margin-top: 0; }
+
+.quiz-item { margin-bottom: 1.4rem; }
+.quiz-item:last-child { margin-bottom: 0; }
+
+.quiz-item p.q { font-weight: 600; margin-bottom: 0.5rem; }
+
+.quiz-item input[type="text"] {
+  width: 100%;
+  max-width: 22em;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.quiz-item button {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  min-height: 44px;
+  /* --rule against the .quiz container's own --panel-raised background is ~1.6:1 --
+     nearly invisible. Match the adjacent input's --panel background (a real contrast
+     step down from the container) and the stronger --ink-dim border it already uses. */
+  border: 1px solid var(--ink-dim);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+.quiz-item .feedback {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+.feedback.correct { color: var(--good); }
+.feedback.incorrect { color: var(--error); }
+
+/* Interactive slider widget: shared by any lesson with a live-manipulable
+   demo (drag a parameter, watch a derived quantity respond). */
+.widget {
+  background: var(--panel-raised);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem 1.4rem;
+  margin: 1.6rem 0;
+  font-family: var(--sans);
+}
+
+.widget h3 { margin-top: 0; }
+
+.widget svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+}
+
+.widget .caption {
+  font-size: 0.78rem;
+  color: var(--ink-dim);
+  margin-bottom: 0;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0 0.4rem;
+}
+
+.slider-row input[type="range"] { flex: 1; }
+
+/* Matches src/index.css's range-input styling exactly -- color-scheme:dark alone still
+   leaves the native thumb/track in the OS accent color (blue), the brightest thing on a
+   dark page. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  margin: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal), var(--link));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -11px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--teal);
+  box-shadow: 0 0 10px rgba(47, 231, 201, 0.6);
+}
+
+.slider-row output {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  min-width: 6.5em;
+  text-align: right;
+  color: var(--ink);
+}
+
+.readout {
+  display: flex;
+  gap: 2rem;
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.readout div strong {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-dim);
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.legend {
+  display: flex;
+  gap: 1.4rem;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.swatch { width: 14px; height: 3px; display: inline-block; }
+.swatch.block { width: 12px; height: 12px; border-radius: 2px; }
+
+.direction { font-weight: 700; }
+.direction.up { color: var(--good); }
+.direction.down { color: var(--error); }
+
+/* Frequency-axis strip: a horizontal band diagram with a moving marker,
+   used to show where a peak sits relative to labeled ranges (e.g. LF/HF). */
+.freq-axis {
+  position: relative;
+  height: 46px;
+  margin: 0.8rem 0 0.3rem;
+}
+
+.freq-axis__track {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  height: 18px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+.freq-axis__band {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0 4px;
+  font-size: 0.8125rem;
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* Dark text on the bright signal-color chip -- --paper is near-black in
+     this dark token set, giving strong contrast against amber/teal fills. */
+  color: var(--paper);
+}
+
+/* At narrow widths the LF chip is ~106px -- "LF (0.04-0.15 Hz)" doesn't fit and silently
+   clips (centered flex content overflowing both sides doesn't reliably show an ellipsis).
+   Drop the parenthetical range and keep just "LF"/"HF"; the ranges are already stated in
+   the surrounding prose. */
+@media (max-width: 520px) {
+  .freq-axis__band-detail {
+    display: none;
+  }
+}
+
+.freq-axis__marker {
+  position: absolute;
+  top: 4px;
+  width: 2px;
+  height: 38px;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--ink);
+  transform: translateX(-1px);
+}
+
+.freq-axis__marker::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--ink);
+  filter: drop-shadow(0 0 1px var(--paper));
+}
+
+.nav {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.ask-agent {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  margin-top: 2.5rem;
+}

@@ -2,7 +2,9 @@
 // Run with: npx tsx src/sim/selfcheck.ts
 import assert from 'node:assert'
 import { rmssd, sdnn } from './metrics.js'
-import { computePsd, bandPower, LF_BAND, HF_BAND } from './psd.js'
+import { computePsd, bandPower, freqGridFor, LF_BAND, HF_BAND } from './psd.js'
+import { computePsdAr, burgPsd } from './psdAr.js'
+import { nextPow2 } from './fft.js'
 import { RRGenerator, mulberry32 } from './rrGenerator.js'
 import { parseRRText } from './parseRRFile.js'
 
@@ -43,6 +45,70 @@ function approxEqual(a: number, b: number, tol: number, label: string) {
   const lf = bandPower(freqs, power, ...LF_BAND)
   assert(hf > lf, `expected HF power (${hf}) > LF power (${lf}) for a 0.25 Hz signal`)
   console.log(`[ok] 0.25 Hz sinusoid: PSD peak at ${peakFreq.toFixed(3)} Hz, HF ${hf.toFixed(1)} > LF ${lf.toFixed(1)}`)
+}
+
+// 7. Pure 0.25 Hz sinusoid -> Burg AR PSD peak also lands in the HF band, not LF (mirrors
+// check 2 for the FFT path, exercising computePsdAr end-to-end through the spline resample).
+{
+  const fs = 4
+  const n = 1200 // 300 s at 4 Hz
+  const times: number[] = []
+  const values: number[] = []
+  for (let i = 0; i < n; i++) {
+    const t = i / fs
+    times.push(t)
+    values.push(800 + 50 * Math.sin(2 * Math.PI * 0.25 * t))
+  }
+  const { freqs, power } = computePsdAr(times, values, fs)
+  let peakFreq = 0
+  let peakPower = -Infinity
+  for (let k = 0; k < freqs.length; k++) {
+    if (power[k] > peakPower) {
+      peakPower = power[k]
+      peakFreq = freqs[k]
+    }
+  }
+  approxEqual(peakFreq, 0.25, 0.02, 'burg psd peak frequency')
+  const hf = bandPower(freqs, power, ...HF_BAND)
+  const lf = bandPower(freqs, power, ...LF_BAND)
+  assert(hf > lf, `expected HF power (${hf}) > LF power (${lf}) for a 0.25 Hz signal (Burg)`)
+  console.log(`[ok] Burg AR: 0.25 Hz sinusoid PSD peak at ${peakFreq.toFixed(3)} Hz, HF ${hf.toFixed(1)} > LF ${lf.toFixed(1)}`)
+}
+
+// 8. AR(2)-process correctness anchor: a process with an analytically-known pole frequency.
+// Burg should recover both the peak location AND a low model order (the true order is 2) --
+// this is the check that would catch a sign-convention bug in the recursion, since a flipped
+// sign can still land near the right frequency for some parameter choices but forces FPE to a
+// much higher order to compensate for a badly-fit filter. Feeds burgPsd() directly (not
+// computePsdAr) so this tests the Burg core in isolation, without spline-resampling noise.
+{
+  const fs = 4
+  const f0 = 0.1
+  const r = 0.95
+  const theta = (2 * Math.PI * f0) / fs
+  const c1 = 2 * r * Math.cos(theta)
+  const c2 = -r * r
+  const burnIn = 200
+  const n = 1200
+  const rand = mulberry32(11)
+  const raw = new Float64Array(n + burnIn)
+  for (let i = 2; i < raw.length; i++) {
+    raw[i] = c1 * raw[i - 1] + c2 * raw[i - 2] + (rand() - 0.5)
+  }
+  const series = raw.slice(burnIn)
+  const freqs = freqGridFor(nextPow2(series.length), fs)
+  const { freqs: arFreqs, power, order } = burgPsd(series, fs, freqs)
+  let peakFreq = 0
+  let peakPower = -Infinity
+  for (let k = 0; k < arFreqs.length; k++) {
+    if (power[k] > peakPower) {
+      peakPower = power[k]
+      peakFreq = arFreqs[k]
+    }
+  }
+  approxEqual(peakFreq, f0, 0.02, 'burg AR(2) peak frequency')
+  assert(order <= 4, `expected Burg to select a low order for a true AR(2) process, got order ${order}`)
+  console.log(`[ok] AR(2) process (f0=${f0}Hz): Burg peak at ${peakFreq.toFixed(3)}Hz, selected order ${order}`)
 }
 
 function simulateRmssd(breathingRateBrpm: number, seed: number): number {

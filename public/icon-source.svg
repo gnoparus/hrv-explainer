@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="8%" r="70%">
+      <stop offset="0%" stop-color="#2fe7c9" stop-opacity="0.10" />
+      <stop offset="100%" stop-color="#2fe7c9" stop-opacity="0" />
+    </radialGradient>
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="104" fill="#05080b" />
+  <rect width="512" height="512" rx="104" fill="url(#glow)" />
+
+  <!-- Heart outline, smooth two-lobe curve matching the Material/SF Symbols/Font Awesome convergent shape -->
+  <path
+    d="M12,21 C12,21 3,14.5 3,8.5 C3,5.5 5.5,3 8.5,3 C10,3 11.3,3.8 12,5 C12.7,3.8 14,3 15.5,3 C18.5,3 21,5.5 21,8.5 C21,14.5 12,21 12,21 Z"
+    transform="translate(16 30) scale(20 20)"
+    fill="none"
+    stroke="#2fe7c9"
+    stroke-width="0.7"
+    stroke-linejoin="round"
+    opacity="0.9"
+    filter="url(#softGlow)"
+  />
+
+  <!-- Secondary trace: signal-violet, offset behind/below as an echo -->
+  <polyline
+    points="76,306 176,306 206,246 236,346 266,286 296,306 436,306"
+    fill="none"
+    stroke="#b18bff"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.55"
+    filter="url(#softGlow)"
+  />
+
+  <!-- Primary trace: signal-teal QRS spike -->
+  <polyline
+    points="66,256 176,256 216,166 256,346 296,206 326,256 446,256"
+    fill="none"
+    stroke="#2fe7c9"
+    stroke-width="16"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#softGlow)"
+  />
+</svg>

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lesson 1 — Spectral HRV Pitfalls</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+
+<h1>Spectral HRV Pitfalls</h1>
+<p class="subtitle">Lesson 1 · why LF/HF, VLF, and ULF get over-interpreted</p>
+
+<p>
+You already know the headline: LF/HF is not a valid measure of cardiac
+"sympatho-vagal balance." This lesson fills in the <em>why</em> — the actual
+mechanisms behind that failure — and extends the same skepticism to VLF and
+ULF, the two bands your simulator (<code>hrvployyy</code>) doesn't even
+attempt to demonstrate, for good reason.
+</p>
+
+<h2>1. The orthodox story (Task Force, 1996)</h2>
+<p>
+The 1996 Task Force standard<sup><a href="#cite2">2</a></sup> split the HRV
+power spectrum into four bands and assigned each a physiological story:
+</p>
+<ul>
+<li><strong>HF</strong> (0.15–0.4 Hz) — parasympathetic tone, via respiratory sinus arrhythmia.</li>
+<li><strong>LF</strong> (0.04–0.15 Hz) — originally read as sympathetic tone.</li>
+<li><strong>LF/HF</strong> — the ratio, read as "sympatho-vagal balance": high when sympathetic dominates, low when parasympathetic dominates.</li>
+</ul>
+<p>
+This is clean, quotable, and — per the evidence below — wrong for the
+LF/HF part.
+</p>
+
+<h2>2. Why LF/HF fails</h2>
+<p>
+Billman (2013)<sup><a href="#cite1">1</a></sup> lays out four reasons the
+LF/HF-as-balance hypothesis doesn't hold:
+</p>
+<ul>
+<li><strong>LF is not purely sympathetic.</strong> Direct sympathetic nerve recordings don't correlate with LF power. Parasympathetic activity accounts for roughly half of LF variability; sympathetic activity for roughly a quarter — the rest is unidentified.</li>
+<li><strong>The relationship is non-linear, not reciprocal.</strong> The whole ratio assumes sympathetic and parasympathetic tone move in opposite directions. They don't always. Post-exercise, sympathetic activation persists <em>while</em> parasympathetic tone reactivates. Cold-water immersion raises sympathetic activity but produces bradycardia via parasympathetic dominance.</li>
+<li><strong>Pharmacological blockade contradicts it directly.</strong> Randall et al. (1991) combined parasympathetic denervation with beta-blockade — removing both arms of autonomic control — and LF/HF <em>rose</em> from 1.1 to 8.4, falsely implying a shift toward sympathetic dominance in an animal with no functioning sympathetic drive to speak of.</li>
+<li><strong>Respiration confounds both bands independently of the ANS.</strong> Breathing rate and tidal volume shift HRV power on their own. Billman found only ~51% of studies controlled respiratory rate, and ~89% ignored tidal volume — meaning most published LF/HF numbers are partly a respiration artifact, not purely autonomic.</li>
+</ul>
+
+<div class="contested">
+<strong>How hrvployyy shows this live</strong>
+The simulator computes LF/HF by integrating the real power-spectral-density
+over each band (<code>src/sim/psd.ts</code>), rather than assuming "the
+breathing oscillator is HF." At 6 breaths/min, the respiratory peak actually
+sits at 0.1 Hz — inside the <em>LF</em> band, not HF. Dragging breathing
+rate down to 6/min drains HF power into LF while RMSSD simultaneously
+<em>rises</em> — the opposite of what a naive "LF/HF = balance" reading
+would predict. That contradiction is the demo.
+</div>
+
+<div class="widget">
+<h3>Try it: watch the crossover</h3>
+<div class="slider-row">
+  <input type="range" id="brpm" min="4" max="24" step="0.5" value="15">
+  <output id="brpm-out">15.0 br/min</output>
+</div>
+
+<div class="freq-axis">
+  <div class="freq-axis__track">
+    <!-- flex-grow values scaled to sum >= 1 (11+25, not 0.11+0.25) -- CSS only distributes
+         free space proportional to the SUM of flex-grow factors when that sum is under 1,
+         leaving the remainder of the track empty; the marker's position math below assumes
+         these two bands fill the full 0-100% of the track. -->
+    <div class="freq-axis__band" id="band-lf" style="background:#ffc857; flex: 11 0 0;">LF <span class="freq-axis__band-detail">(0.04–0.15 Hz)</span></div>
+    <div class="freq-axis__band" id="band-hf" style="background:#2fe7c9; flex: 25 0 0;">HF <span class="freq-axis__band-detail">(0.15–0.4 Hz)</span></div>
+  </div>
+  <div class="freq-axis__marker" id="freq-marker"></div>
+</div>
+<p class="caption" style="margin-top: 0.9rem;">Respiratory peak is currently inside the <strong id="which-band">—</strong> band.</p>
+
+<svg id="power-chart" viewBox="0 0 640 150" preserveAspectRatio="xMidYMid meet" style="margin-top: 0.6rem;"></svg>
+<div class="legend">
+  <span><span class="swatch block" style="background:#ffc857"></span>LF power (baroreflex floor + respiration, if peak is here)</span>
+  <span><span class="swatch block" style="background:#2fe7c9"></span>HF power (respiration, if peak is here)</span>
+</div>
+
+<div class="readout">
+<div><strong>LF/HF ratio</strong><span id="ro-ratio">—</span></div>
+<div><strong>RMSSD proxy (from lesson 2)</strong><span id="ro-rmssd">—</span></div>
+</div>
+<p class="caption">
+Power values are a simplified single-oscillator teaching proxy (amplitude²),
+not the app's real PSD integration — good enough to show the crossover and
+the ratio's instability, not to read as a clinical number. Drag from 24 down
+to 4 br/min: the ratio swings wildly across the crossover at 9 br/min — it
+doesn't move smoothly at all — while RMSSD proxy rises to a broad peak inside
+the ~6–12 br/min zone and stays clearly higher at 6 br/min than it was back
+at 15. The ratio jumps around; the underlying autonomic signal doesn't.
+</p>
+</div>
+
+<h2>3. VLF and ULF: don't reach for these either</h2>
+<p>
+The same skepticism extends further down the spectrum, for a different
+reason: not "the interpretation is wrong" but "there usually isn't enough
+signal to interpret at all."
+</p>
+<ul>
+<li><strong>VLF</strong> (0.0033–0.04 Hz) is linked to thermoregulation, the renin-angiotensin system, and intrinsic cardiac nervous system activity — but per Shaffer &amp; Ginsberg (2017)<sup><a href="#cite3">3</a></sup>, "there is uncertainty regarding the physiological mechanisms responsible for activity within this band," even with an adequate recording.</li>
+<li><strong>ULF</strong> (≤0.0033 Hz) reflects circadian rhythm and requires a full 24-hour recording to mean anything. A short-term recording — the kind this app simulates — cannot resolve ULF at all; there isn't a full cycle in the window.</li>
+</ul>
+<p>
+Practical takeaway for a short-term recording (a few minutes, like the app
+demos): VLF and ULF should not be presented as autonomic findings. If a
+committee member asks about them, the honest answer is "not resolvable at
+this recording length," not a number.
+</p>
+
+<h2>Quiz</h2>
+<div class="quiz">
+<h3>Recall check</h3>
+<p style="font-family: var(--sans); font-size: 0.85rem; color: var(--ink-dim); margin-top: -0.5rem;">Type your answer, then check it. No penalty for a wrong guess — the point is the retrieval attempt.</p>
+
+<div class="quiz-item">
+<p class="q">1. Roughly what share of LF-band variability is parasympathetic in origin, per Billman?</p>
+<input type="text" id="q1" placeholder="your answer">
+<button onclick="checkAnswer('q1', ['50%', 'about 50%', '~50%', 'half'], 'f1')">Check</button>
+<span class="feedback" id="f1"></span>
+</div>
+
+<div class="quiz-item">
+<p class="q">2. In the Randall et al. blockade study, combined parasympathetic + sympathetic (beta-adrenergic) blockade caused LF/HF to do what?</p>
+<input type="text" id="q2" placeholder="your answer">
+<button onclick="checkAnswer('q2', ['rise', 'increase', 'go up', 'increased'], 'f2')">Check</button>
+<span class="feedback" id="f2"></span>
+</div>
+
+<div class="quiz-item">
+<p class="q">3. Which band requires a full 24-hour recording before it means anything?</p>
+<input type="text" id="q3" placeholder="your answer">
+<button onclick="checkAnswer('q3', ['ulf', 'the ulf band'], 'f3')">Check</button>
+<span class="feedback" id="f3"></span>
+</div>
+</div>
+
+<script src="assets/hrv-model.js"></script>
+<script>
+function checkAnswer(inputId, accepted, feedbackId) {
+  var val = document.getElementById(inputId).value.trim().toLowerCase();
+  var el = document.getElementById(feedbackId);
+  var ok = accepted.some(function(a) { return a.toLowerCase() === val; });
+  el.textContent = ok ? "Correct." : "Not quite — see section above and try again.";
+  el.className = "feedback " + (ok ? "correct" : "incorrect");
+}
+
+// Crossover widget: freq-axis marker + LF/HF power-split bar + ratio/RMSSD readout.
+(function () {
+  var MIN_BRPM = 4, MAX_BRPM = 24;
+  var AXIS_MIN_HZ = 0.04, AXIS_MAX_HZ = 0.4; // matches the LF+HF band track drawn above
+
+  var slider = document.getElementById('brpm');
+  var out = document.getElementById('brpm-out');
+  var marker = document.getElementById('freq-marker');
+  var whichBand = document.getElementById('which-band');
+  var roRatio = document.getElementById('ro-ratio');
+  var roRmssd = document.getElementById('ro-rmssd');
+  var chart = document.getElementById('power-chart');
+
+  var W = 640, H = 150, PAD = 16, BAR_W = 160, GAP = 60;
+  var svgns = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(svgns, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function drawChart(lfPower, hfPower) {
+    while (chart.firstChild) chart.removeChild(chart.firstChild);
+    // Fixed scale (not recomputed per frame) so a bar's height means the same
+    // thing on every drag step -- an unchanged power value must render at an
+    // unchanged height, even while the other bar is moving.
+    var scale = (H - PAD * 2) / HRV_MODEL.MAX_BAND_POWER;
+    var barsX = [W / 2 - GAP / 2 - BAR_W, W / 2 + GAP / 2];
+    var powers = [lfPower, hfPower];
+    var colors = ['#ffc857', '#2fe7c9'];
+    var labels = ['LF', 'HF'];
+
+    for (var i = 0; i < 2; i++) {
+      var barH = Math.max(2, powers[i] * scale);
+      chart.appendChild(el('rect', {
+        x: barsX[i], y: H - PAD - barH, width: BAR_W, height: barH, fill: colors[i], rx: 3,
+      }));
+      var t = el('text', {
+        x: barsX[i] + BAR_W / 2, y: H - PAD - barH - 8, 'text-anchor': 'middle',
+        'font-size': '13', 'font-family': 'var(--sans)', fill: 'currentColor',
+      });
+      t.textContent = labels[i] + ': ' + powers[i].toFixed(0);
+      chart.appendChild(t);
+    }
+    chart.appendChild(el('line', {
+      x1: PAD, x2: W - PAD, y1: H - PAD, y2: H - PAD, stroke: '#1b2733',
+    }));
+  }
+
+  function update() {
+    var brpm = parseFloat(slider.value);
+    out.textContent = brpm.toFixed(1) + ' br/min';
+
+    var split = HRV_MODEL.bandPower(brpm);
+    var fHz = split.fHz;
+
+    var pct = Math.min(100, Math.max(0, (fHz - AXIS_MIN_HZ) / (AXIS_MAX_HZ - AXIS_MIN_HZ) * 100));
+    marker.style.left = pct + '%';
+
+    whichBand.textContent = split.isHf ? 'HF' : 'LF';
+    whichBand.style.color = split.isHf ? '#2fe7c9' : '#ffc857';
+
+    drawChart(split.lfPower, split.hfPower);
+
+    var ratio = split.lfPower / Math.max(split.hfPower, 1);
+    roRatio.textContent = split.hfPower < 1 ? 'very high (HF ≈ 0)' : ratio.toFixed(2);
+
+    var amp = HRV_MODEL.hfAmplitudeMs(brpm);
+    roRmssd.textContent = HRV_MODEL.rmssdProxy(amp, brpm).toFixed(2);
+  }
+
+  slider.addEventListener('input', update);
+  update();
+})();
+</script>
+
+<h2>Primary source</h2>
+<p>
+Read the full Billman (2013) paper — it's short and free — before your next
+session:
+<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3576706/" target="_blank" rel="noopener">The LF/HF ratio does not accurately measure cardiac sympatho-vagal balance</a>.
+</p>
+
+<h2 id="citations">Citations</h2>
+<div class="citations">
+<ol>
+<li id="cite1">Billman, G.E. (2013) "The LF/HF ratio does not accurately measure cardiac sympatho-vagal balance." <em>Frontiers in Physiology</em>, 4:26. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3576706/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC3576706</a></li>
+<li id="cite2">Task Force of the ESC/NASPE (1996) "Heart rate variability: Standards of measurement, physiological interpretation, and clinical use." <em>Circulation</em>, 93:1043–1065. <a href="https://doi.org/10.1161/01.CIR.93.5.1043" target="_blank" rel="noopener">doi.org/10.1161/01.CIR.93.5.1043</a></li>
+<li id="cite3">Shaffer, F. &amp; Ginsberg, J.P. (2017) "An Overview of Heart Rate Variability Metrics and Norms." <em>Frontiers in Public Health</em>, 5:258. <a href="https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2017.00258/full" target="_blank" rel="noopener">frontiersin.org</a></li>
+</ol>
+</div>
+
+<p class="nav">
+<a href="spectral-bands-reference.html">→ Reference: HRV Spectral Bands cheat sheet</a>
+&nbsp;·&nbsp;
+<a href="0002-rsa-resonance-curve.html">Next → Lesson 2: RSA Resonance Curve</a>
+</p>
+
+<p class="ask-agent">
+Stuck on any of this, or want to go deeper on a specific mechanism (e.g. why
+tidal volume confounds respiration control)? Ask your teaching agent —
+that's what it's there for.
+</p>
+
+</body>
+</html>

@@ -100,7 +100,7 @@ function App() {
           <header className="app__header">
             <div className="app__title">
               <span className="pulse-dot" key={snapshot.beatCount} />
-              HRV Explainer
+              HRV Simulator
             </div>
             {source === 'simulated' && (
               <button
@@ -127,6 +127,9 @@ function App() {
                 sdnnMs={active.sdnnMs}
                 lfPower={active.lfPower}
                 hfPower={active.hfPower}
+                lfPowerAr={active.lfPowerAr}
+                hfPowerAr={active.hfPowerAr}
+                arOrder={active.psdAr.order}
                 beatCount={snapshot.beatCount}
                 metricsWindow={metricsWindow}
                 onMetricsWindowChange={setMetricsWindow}
@@ -136,7 +139,7 @@ function App() {
 
               <div className="chart-row">
                 <Tachogram points={snapshot.points} />
-                <PsdChart psd={active.psd} windowSeconds={metricsWindow === 'clinical' ? 300 : 60} />
+                <PsdChart psd={active.psd} psdAr={active.psdAr} windowSeconds={metricsWindow === 'clinical' ? 300 : 60} />
                 <PoincarePlot points={snapshot.points} />
               </div>
             </>

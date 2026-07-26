@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lesson 2 — RSA Resonance Curve</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+
+<h1>RSA Resonance Curve</h1>
+<p class="subtitle">Lesson 2 · why HF amplitude isn't constant, and why that matters for RMSSD</p>
+
+<p>
+Lesson 1 covered why LF/HF fails as a balance index. This lesson covers a
+different, more basic claim your simulator makes: that <strong>slowing your
+breathing to ~6 breaths/min raises RMSSD</strong> — and why a naive model
+would get that backwards.
+</p>
+
+<h2>1. What RSA is</h2>
+<p>
+Respiratory sinus arrhythmia (RSA) is the beat-to-beat speeding and slowing
+of heart rate with breathing — faster on inhale, slower on exhale. It shows
+up in an R-R interval trace as a wobble riding on top of the baseline, with
+an amplitude (call it <code>A_HF</code>) and a frequency equal to the
+breathing rate.
+</p>
+
+<h2>2. The naive assumption, and why it's backwards</h2>
+<p>
+If you model RSA as a fixed-size wobble — same amplitude no matter how fast
+or slow you breathe — then basic signal math says RMSSD (a successive-beat-
+difference measure) should <strong>scale with amplitude × frequency</strong>.
+Fix the amplitude, and slower breathing (lower frequency) means <em>lower</em>
+RMSSD. That's the opposite of what actually happens: paced breathing around
+6 breaths/min is well known to <em>raise</em> HRV, not lower it.
+</p>
+
+<h2>3. The resolution: amplitude itself isn't constant</h2>
+<p>
+RSA amplitude follows a <strong>resonance curve</strong> that peaks around
+0.1 Hz (~6 breaths/min) — the natural resonance frequency of the
+cardiorespiratory system, where the respiratory reflex and the baroreflex
+loop interact constructively.<sup><a href="#cite1">1</a></sup> Individual
+resonance frequency varies (roughly 4.5–7 breaths/min<sup><a href="#cite1">1</a></sup>),
+but the shape is the same: amplitude grows sharply as breathing approaches
+that frequency, enough to outweigh the frequency term above and make RMSSD
+<em>rise</em>, not fall.
+</p>
+
+<div class="contested">
+<strong>What your simulator actually computes</strong>
+<code>src/sim/rrGenerator.ts</code> — <code>hfAmplitudeMs()</code> — models this
+directly as a Gaussian resonance curve: amplitude floor 8&nbsp;ms at the
+extremes, peak 60&nbsp;ms at 0.1&nbsp;Hz, width (σ) 0.095&nbsp;Hz, scaled by
+vagal tone. The widget below is that exact curve.
+</div>
+
+<div class="widget">
+<h3>Try it: drag the breathing rate</h3>
+<div class="slider-row">
+  <input type="range" id="brpm" min="4" max="24" step="0.5" value="15">
+  <output id="brpm-out">15.0 br/min</output>
+</div>
+<svg id="chart" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet"></svg>
+<div class="legend">
+  <span><span class="swatch" style="background:#2fe7c9"></span>This app's resonance model</span>
+  <span><span class="swatch" style="background:#b18bff"></span>Naive constant-amplitude model</span>
+</div>
+<div class="readout">
+  <div><strong>A_HF at this rate</strong><span id="ro-amp">—</span></div>
+  <div><strong>RMSSD proxy (resonance model)</strong><span id="ro-rmssd-res">—</span></div>
+  <div><strong>RMSSD proxy (naive model)</strong><span id="ro-rmssd-naive">—</span></div>
+</div>
+<p class="caption">
+"RMSSD proxy" here is a simplified teaching stand-in (amplitude × frequency),
+not the exact RMSSD formula — good enough to show <em>direction</em>, not a
+clinical number. Drag from 24 down toward 6 br/min: the naive constant-
+amplitude model's proxy falls the whole way. The resonance model's proxy
+instead rises to a broad peak inside the ~6–12 br/min zone, then eases back
+down slightly by 6 br/min — but even at 6, it's still higher than it was at
+15. Non-monotonic beats monotonic-in-the-wrong-direction; don't read the
+exact peak location as "the" resonance frequency (see the callout above —
+individual resonance frequency varies).
+</p>
+</div>
+
+<h2>Quiz</h2>
+<div class="quiz">
+<h3>Recall check</h3>
+<div class="quiz-item">
+<p class="q">1. At what breathing rate (breaths/min) does this app's resonance curve peak?</p>
+<input type="text" id="q1" placeholder="your answer">
+<button onclick="checkAnswer('q1', ['6', '6 br/min', '6 breaths/min', '6bpm', '6 bpm'], 'f1')">Check</button>
+<span class="feedback" id="f1"></span>
+</div>
+<div class="quiz-item">
+<p class="q">2. If HF amplitude were constant instead of resonance-shaped, would RMSSD rise or fall as breathing slows toward 6/min?</p>
+<input type="text" id="q2" placeholder="your answer">
+<button onclick="checkAnswer('q2', ['fall', 'falls', 'decrease', 'decreases', 'lower', 'it would fall'], 'f2')">Check</button>
+<span class="feedback" id="f2"></span>
+</div>
+<div class="quiz-item">
+<p class="q">3. What physiological loop, besides the respiratory reflex, resonates at ~0.1 Hz and amplifies RSA there?</p>
+<input type="text" id="q3" placeholder="your answer">
+<button onclick="checkAnswer('q3', ['baroreflex', 'the baroreflex', 'baroreceptor reflex'], 'f3')">Check</button>
+<span class="feedback" id="f3"></span>
+</div>
+</div>
+
+<h2>Primary source</h2>
+<p>
+Read before your next session:
+<a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2014.00756" target="_blank" rel="noopener">Lehrer &amp; Gevirtz (2014), "Heart rate variability biofeedback: how and why does it work?"</a>
+— the resonance-frequency-breathing mechanism this lesson leans on.
+</p>
+
+<h2 id="citations">Citations</h2>
+<div class="citations">
+<ol>
+<li id="cite1">Lehrer, P.M. &amp; Gevirtz, R. (2014) "Heart rate variability biofeedback: how and why does it work?" <em>Frontiers in Psychology</em>, 5:756. <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2014.00756" target="_blank" rel="noopener">frontiersin.org</a></li>
+<li id="cite2"><code>src/sim/rrGenerator.ts</code>, this repo (<a href="https://github.com/gnoparus/hrv-explainer" target="_blank" rel="noopener">gnoparus/hrv-explainer</a>) — the resonance-curve implementation this lesson's widget mirrors.</li>
+</ol>
+</div>
+
+<p class="nav">
+<a href="0001-spectral-hrv-pitfalls.html">← Lesson 1: Spectral HRV Pitfalls</a>
+&nbsp;·&nbsp;
+<a href="spectral-bands-reference.html">Reference: HRV Spectral Bands</a>
+</p>
+
+<p class="ask-agent">
+Want the exact discrete-sampling RMSSD math instead of the amplitude×frequency
+proxy, or to see how vagal tone scales this curve? Ask your teaching agent.
+</p>
+
+<script src="assets/hrv-model.js"></script>
+<script>
+function checkAnswer(inputId, accepted, feedbackId) {
+  var val = document.getElementById(inputId).value.trim().toLowerCase();
+  var el = document.getElementById(feedbackId);
+  var ok = accepted.some(function(a) { return a.toLowerCase() === val; });
+  el.textContent = ok ? "Correct." : "Not quite — see section above and try again.";
+  el.className = "feedback " + (ok ? "correct" : "incorrect");
+}
+
+var hfAmplitudeMs = HRV_MODEL.hfAmplitudeMs;
+var rmssdProxy = HRV_MODEL.rmssdProxy;
+
+// Naive counterfactual: amplitude frozen at its value at a "normal" 15 br/min.
+var NAIVE_REF_BRPM = 15;
+var NAIVE_AMP_MS = hfAmplitudeMs(NAIVE_REF_BRPM);
+
+var MIN_BRPM = 4, MAX_BRPM = 24, SAMPLES = 120;
+var W = 640, H = 260, PAD_L = 44, PAD_R = 12, PAD_T = 12, PAD_B = 28;
+
+function xOf(brpm) {
+  return PAD_L + (brpm - MIN_BRPM) / (MAX_BRPM - MIN_BRPM) * (W - PAD_L - PAD_R);
+}
+
+function buildChart() {
+  var svg = document.getElementById('chart');
+  var resPoints = [], naivePoints = [];
+  var maxProxy = 0;
+  for (var i = 0; i <= SAMPLES; i++) {
+    var brpm = MIN_BRPM + (MAX_BRPM - MIN_BRPM) * (i / SAMPLES);
+    var resProxy = rmssdProxy(hfAmplitudeMs(brpm), brpm);
+    var naiveProxy = rmssdProxy(NAIVE_AMP_MS, brpm);
+    maxProxy = Math.max(maxProxy, resProxy, naiveProxy);
+    resPoints.push([brpm, resProxy]);
+    naivePoints.push([brpm, naiveProxy]);
+  }
+  function yOf(v) {
+    return H - PAD_B - (v / (maxProxy * 1.08)) * (H - PAD_T - PAD_B);
+  }
+  function pathFor(points) {
+    return points.map(function (p, i) {
+      return (i === 0 ? 'M' : 'L') + xOf(p[0]).toFixed(1) + ',' + yOf(p[1]).toFixed(1);
+    }).join(' ');
+  }
+
+  var axisColor = 'var(--rule)';
+  var svgns = 'http://www.w3.org/2000/svg';
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  // axis
+  var axisX = document.createElementNS(svgns, 'line');
+  axisX.setAttribute('x1', PAD_L); axisX.setAttribute('x2', W - PAD_R);
+  axisX.setAttribute('y1', H - PAD_B); axisX.setAttribute('y2', H - PAD_B);
+  axisX.setAttribute('stroke', '#1b2733');
+  svg.appendChild(axisX);
+
+  [4, 6, 10, 15, 20, 24].forEach(function (brpm) {
+    var t = document.createElementNS(svgns, 'text');
+    t.setAttribute('x', xOf(brpm)); t.setAttribute('y', H - 8);
+    t.setAttribute('font-size', '10'); t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('fill', 'currentColor'); t.textContent = brpm;
+    svg.appendChild(t);
+  });
+
+  var resPath = document.createElementNS(svgns, 'path');
+  resPath.setAttribute('d', pathFor(resPoints));
+  resPath.setAttribute('fill', 'none');
+  resPath.setAttribute('stroke', '#2fe7c9');
+  resPath.setAttribute('stroke-width', '2.5');
+  svg.appendChild(resPath);
+
+  var naivePath = document.createElementNS(svgns, 'path');
+  naivePath.setAttribute('d', pathFor(naivePoints));
+  naivePath.setAttribute('fill', 'none');
+  naivePath.setAttribute('stroke', '#b18bff');
+  naivePath.setAttribute('stroke-width', '2');
+  naivePath.setAttribute('stroke-dasharray', '5,4');
+  svg.appendChild(naivePath);
+
+  var markerRes = document.createElementNS(svgns, 'circle');
+  markerRes.setAttribute('r', '5'); markerRes.setAttribute('fill', '#2fe7c9');
+  markerRes.setAttribute('id', 'marker-res');
+  svg.appendChild(markerRes);
+
+  var markerNaive = document.createElementNS(svgns, 'circle');
+  markerNaive.setAttribute('r', '4'); markerNaive.setAttribute('fill', '#b18bff');
+  markerNaive.setAttribute('id', 'marker-naive');
+  svg.appendChild(markerNaive);
+
+  return { yOf: yOf };
+}
+
+var chartScale = buildChart();
+
+function update() {
+  var brpm = parseFloat(document.getElementById('brpm').value);
+  document.getElementById('brpm-out').textContent = brpm.toFixed(1) + ' br/min';
+
+  var amp = hfAmplitudeMs(brpm);
+  var proxyRes = rmssdProxy(amp, brpm);
+  var proxyNaive = rmssdProxy(NAIVE_AMP_MS, brpm);
+
+  document.getElementById('ro-amp').textContent = amp.toFixed(1) + ' ms';
+  document.getElementById('ro-rmssd-res').textContent = proxyRes.toFixed(2);
+  document.getElementById('ro-rmssd-naive').textContent = proxyNaive.toFixed(2);
+
+  document.getElementById('marker-res').setAttribute('cx', xOf(brpm));
+  document.getElementById('marker-res').setAttribute('cy', chartScale.yOf(proxyRes));
+  document.getElementById('marker-naive').setAttribute('cx', xOf(brpm));
+  document.getElementById('marker-naive').setAttribute('cy', chartScale.yOf(proxyNaive));
+}
+
+document.getElementById('brpm').addEventListener('input', update);
+update();
+</script>
+
+</body>
+</html>

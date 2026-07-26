@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-07-26T00:00:00Z",
-  "title": "Design System: HRV Explainer",
+  "title": "Design System: HRV Simulator",
   "extensions": {
     "colorMeta": {
       "void": { "role": "neutral", "displayName": "Void", "canonical": "#05080b", "tonalRamp": ["#020304", "#05080b", "#0b1117", "#0e161d", "#1b2733", "#3a4c5c", "#7c8fa0", "#d7e2ea"] },
