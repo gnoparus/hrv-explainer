@@ -47,8 +47,13 @@ export function snapshotFromPoints(points: { t: number; rrMs: number }[]): HrvSn
   const firstT = points[0].t
   const recent = points.filter((p) => p.t >= lastT - METRICS_WINDOW_SECONDS)
   const clinicalWindow = points.filter((p) => p.t >= lastT - CLINICAL_WINDOW_SECONDS)
+  // Tachogram/Poincaré render every point with no windowing of their own (they trust the
+  // caller, same as the live path bounding `raw` to DISPLAY_WINDOW_SECONDS) -- an unbounded
+  // multi-hour upload would otherwise render tens of thousands of SVG nodes and let stale
+  // outliers distort the Poincaré scale.
+  const displayPoints = points.filter((p) => p.t >= lastT - DISPLAY_WINDOW_SECONDS)
   return {
-    points,
+    points: displayPoints,
     beatCount: points.length,
     live: computeWindowMetrics(recent),
     clinical: computeWindowMetrics(clinicalWindow),
@@ -100,9 +105,11 @@ export function useHrvSimulation(params: HrvParams): HrvSnapshot {
       const metricsCutoff = beat.t - METRICS_WINDOW_SECONDS
       const recent = raw.filter((p) => p.t >= metricsCutoff)
 
-      // `raw` is already bounded to DISPLAY_WINDOW_SECONDS (== CLINICAL_WINDOW_SECONDS), so
-      // the clinical window is just the full buffer -- no separate slice needed.
-      const clinicalReadySec = Math.min(CLINICAL_WINDOW_SECONDS, raw.length ? raw[raw.length - 1].t - raw[0].t : 0)
+      // Elapsed sim time, not raw's filtered span: `raw` only retains points with
+      // t >= beat.t - DISPLAY_WINDOW_SECONDS, so its oldest point always lags slightly behind
+      // that cutoff by up to one RR interval -- raw[last].t - raw[0].t asymptotes just under
+      // 300 and never reaches it, leaving the clinical window stuck "gathering" forever.
+      const clinicalReadySec = Math.min(CLINICAL_WINDOW_SECONDS, beat.t)
 
       setSnapshot({
         points: raw,

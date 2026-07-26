@@ -40,8 +40,14 @@ function App() {
   const awaitingUpload = source === 'uploaded' && !uploadedSnapshot
   const snapshot = source === 'uploaded' && uploadedSnapshot ? uploadedSnapshot : liveSnapshot
   const active = metricsWindow === 'clinical' ? snapshot.clinical : snapshot.live
+  // Same readiness condition MetricsStrip uses to show dashes -- saving a still-warming
+  // (near-zero/partial) value would record it in history as if it were a real result.
+  const metricsWarming =
+    source === 'simulated' &&
+    (metricsWindow === 'clinical' ? snapshot.clinicalReadySec < 300 : snapshot.beatCount < 8)
 
   function handleSave() {
+    if (metricsWarming) return
     setSessions(
       saveSession({
         breathingRateBrpm,
@@ -97,7 +103,13 @@ function App() {
               HRV Explainer
             </div>
             {source === 'simulated' && (
-              <button type="button" className="save-session-btn" onClick={handleSave}>
+              <button
+                type="button"
+                className="save-session-btn"
+                onClick={handleSave}
+                disabled={metricsWarming}
+                title={metricsWarming ? 'Wait for the metrics to finish warming up before saving' : undefined}
+              >
                 Save session
               </button>
             )}
@@ -159,7 +171,7 @@ function App() {
               onTogglePacer={() => setShowPacer((v) => !v)}
             />
           ) : (
-            <UploadControls onLoaded={setUploadedData} />
+            <UploadControls value={uploadedData} onLoaded={setUploadedData} />
           )}
         </div>
       </div>

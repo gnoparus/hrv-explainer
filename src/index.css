@@ -166,6 +166,12 @@ input[type='range']:focus-visible::-moz-range-thumb {
   color: var(--c-teal);
 }
 
+.save-session-btn:disabled {
+  color: var(--text-dim);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .app__title {
   display: flex;
   align-items: center;

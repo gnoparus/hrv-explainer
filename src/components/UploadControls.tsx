@@ -2,9 +2,18 @@ import { useRef, useState, type ChangeEvent } from 'react'
 import { parseRRText } from '../sim/parseRRFile'
 import type { ParsedRR } from '../sim/parseRRFile'
 
-export function UploadControls({ onLoaded }: { onLoaded: (data: ParsedRR | null) => void }) {
+// `value` is parent-owned (App.tsx's uploadedData) rather than local state -- this component
+// gets unmounted whenever the source toggle flips to "Simulated", and a purely local "loaded"
+// state would reset to null on remount even though the parent still has the file active,
+// making the picker misleadingly show "Choose file" for an already-loaded recording.
+export function UploadControls({
+  value,
+  onLoaded,
+}: {
+  value: ParsedRR | null
+  onLoaded: (data: ParsedRR | null) => void
+}) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [loaded, setLoaded] = useState<ParsedRR | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
@@ -14,30 +23,27 @@ export function UploadControls({ onLoaded }: { onLoaded: (data: ParsedRR | null)
     try {
       const text = await file.text()
       const parsed = parseRRText(text, file.name)
-      setLoaded(parsed)
       setError(null)
       onLoaded(parsed)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not read this file.')
-      setLoaded(null)
       onLoaded(null)
     }
   }
 
   function clear() {
-    setLoaded(null)
     setError(null)
     onLoaded(null)
   }
 
   return (
     <div className="controls control--upload">
-      {loaded ? (
+      {value ? (
         <>
           <div className="upload-summary">
-            <span className="upload-summary__name">{loaded.fileName}</span>
+            <span className="upload-summary__name">{value.fileName}</span>
             <span className="upload-summary__stats">
-              {loaded.points.length} beats · {Math.round(loaded.points[loaded.points.length - 1].t)}s recording
+              {value.points.length} beats · {Math.round(value.points[value.points.length - 1].t)}s recording
             </span>
           </div>
           <div className="preset-buttons">
