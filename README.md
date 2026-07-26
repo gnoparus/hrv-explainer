@@ -76,10 +76,12 @@ permission).
   visibly thinner at fast breathing (20+ breaths/min) than before — a real
   tradeoff, not a free fix; see the `SIGMA_HF_HZ` comment in
   `src/sim/rrGenerator.ts`.
-- Metrics (RMSSD/SDNN/PSD) compute over a rolling 60s window for live
-  responsiveness, shorter than the clinical 5-minute short-term HRV standard
-  used for the tachogram/Poincaré display. This is a deliberate trade for a
-  live-interactive demo, not a clinical measurement tool.
+- Metrics (RMSSD/SDNN/PSD) default to a rolling 60s window for live
+  responsiveness, shorter than the clinical 5-minute short-term HRV standard.
+  A toggle above the metrics strip ("60s live" / "5 min clinical") switches
+  to the full 5-minute window on demand — it reads "gathering… Ns/300s"
+  until enough data has buffered, rather than showing a misleading partial
+  number.
 - Export snapshot captures the three SVG charts only, not panel titles or the
   metrics strip.
 

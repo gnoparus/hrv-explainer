@@ -205,6 +205,29 @@ input[type='range']:focus-visible::-moz-range-thumb {
   letter-spacing: 0.4px;
 }
 
+.window-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.window-toggle button {
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.window-toggle button[aria-pressed='true'] {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
 @media (max-width: 800px), (orientation: portrait) {
   .metrics-strip {
     grid-template-columns: 1fr;
