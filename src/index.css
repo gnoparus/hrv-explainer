@@ -79,12 +79,6 @@ input[type='range']:focus-visible::-moz-range-thumb {
 .app {
   display: flex;
   flex-direction: column;
-  /* Centered, not top-pinned: on a tall/landscape viewport the content now sizes to its
-     own content height (see .app__readout below) rather than a flex:1 chart-row stretching
-     to fill leftover space, so without this it would float at the top with a dead void
-     underneath. Centering reads as an intentional composition instead. Content that's
-     taller than the viewport (mobile/portrait) still scrolls normally via overflow-y. */
-  justify-content: center;
   /* Generous gap: separates the read zone (data) from the controls (input) below it. */
   gap: var(--space-5);
   height: 100svh;
@@ -95,6 +89,13 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .app__readout {
+  /* Auto margins, not .app{justify-content:center} -- on a tall/landscape viewport this
+     still centers the block (extra space splits evenly above .app__readout and below
+     .controls-bar), but unlike justify-content:center, auto margins collapse to 0 instead
+     of distributing NEGATIVE space when content overflows -- centering via alignment
+     would otherwise push the header/top metrics above the scroll origin, unreachable via
+     overflow-y (real bug, caught on mobile portrait where content exceeds 100svh). */
+  margin-top: auto;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -175,6 +176,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .controls-bar {
   flex: none;
+  margin-bottom: auto;
 }
 
 /* ---------- metrics strip ---------- */
