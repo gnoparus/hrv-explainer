@@ -84,17 +84,21 @@ export function PsdChart({ psd, psdAr, windowSeconds }: { psd: PsdResult; psdAr:
       return { ...empty, x, lfRect: null as null | number[], hfRect: null as null | number[], hzTicks }
     }
 
+    const points = toBandedPoints(psd.freqs, psd.power)
+    const arPoints = toBandedPoints(psdAr.freqs, psdAr.power)
+
     // Shared y-domain across both traces -- a per-trace rescale would silently mislead about
-    // their relative peak heights.
+    // their relative peak heights. Computed from the already band-filtered (f <= F_MAX) points,
+    // not the raw power arrays -- those extend out to the Nyquist frequency (fs/2, ~2Hz), well
+    // past what's actually plotted, so an off-screen peak up there (more likely on the AR trace,
+    // whose grid reaches closer to Nyquist) would otherwise silently compress both visible
+    // traces toward the baseline.
     let maxPower = 0
-    for (const p of psd.power) if (p > maxPower) maxPower = p
-    for (const p of psdAr.power) if (p > maxPower) maxPower = p
+    for (const d of points) if (d.p > maxPower) maxPower = d.p
+    for (const d of arPoints) if (d.p > maxPower) maxPower = d.p
     const y = scaleLinear()
       .domain([0, maxPower * 1.1 || 1])
       .range([plotBottom - 12, 12])
-
-    const points = toBandedPoints(psd.freqs, psd.power)
-    const arPoints = toBandedPoints(psdAr.freqs, psdAr.power)
 
     // Fill (closed shape, no stroke) and stroke (open line, no fill) are generated and
     // rendered separately -- a d3.area() path is closed, so stroking it also draws its
@@ -143,7 +147,7 @@ export function PsdChart({ psd, psdAr, windowSeconds }: { psd: PsdResult; psdAr:
     <div className="panel">
       <div className="panel__title">
         Frequency spectrum (PSD, Hz, {windowLabel})
-        <InfoTag text="Solid = FFT/Welch periodogram (nonparametric, the established clinical default). Dashed = Burg autoregressive estimate (order shown in the metrics strip below) -- smoother, sharper peak resolution on short windows, but sensitive to the chosen model order. Expect them to broadly agree; large disagreement usually flags a poor AR order fit for this window, not a bad measurement." />
+        <InfoTag text="Solid = FFT/Hann periodogram (a single windowed FFT over the whole record, not segment-averaged Welch -- nonparametric, the established clinical default). Dashed = Burg autoregressive estimate (order shown in the metrics strip below) -- sharper peak resolution on short windows, but sensitive to the chosen model order. Expect them to broadly agree; large disagreement usually flags a poor AR order fit for this window, not a bad measurement." />
       </div>
       <svg className="panel__svg panel__svg--wide" viewBox={`0 0 ${VB_W} ${VB_H}`}>
         {warming ? (
@@ -184,7 +188,7 @@ export function PsdChart({ psd, psdAr, windowSeconds }: { psd: PsdResult; psdAr:
             <g className="psd-legend">
               <line x1={VB_W - 168} x2={VB_W - 140} y1={20} y2={20} className="psd-legend__swatch" />
               <text x={VB_W - 134} y={23} className="axis-tick">
-                FFT/Welch
+                FFT periodogram
               </text>
               <line x1={VB_W - 168} x2={VB_W - 140} y1={34} y2={34} className="psd-legend__swatch psd-legend__swatch--ar" />
               <text x={VB_W - 134} y={37} className="axis-tick">

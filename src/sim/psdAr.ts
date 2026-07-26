@@ -101,6 +101,10 @@ export function burgPsd(centered: Float64Array, fs: number, freqs: number[]): Ps
   const dt = 1 / fs
   // AR spectral density: S(f) = xms*dt / |1 - sum_i coeffs[i]*e^{-j*2*pi*f*i*dt}|^2 -- same
   // formula and sign convention as Numerical Recipes' evlmem, using the coeffs from burg() above.
+  // This is the two-sided density; freqs only covers the nonnegative half, so double it here
+  // to match computePsd's one-sided convention (see its own "double for one-sided spectrum"
+  // comment) -- otherwise every AR band-power number is ~half the FFT one and the two methods
+  // aren't comparable in the same units, which defeats the point of showing them side by side.
   const power = freqs.map((f) => {
     const theta = 2 * Math.PI * f * dt
     let sumr = 1
@@ -109,7 +113,7 @@ export function burgPsd(centered: Float64Array, fs: number, freqs: number[]): Ps
       sumr -= coeffs[i - 1] * Math.cos(i * theta)
       sumi -= coeffs[i - 1] * Math.sin(i * theta)
     }
-    return (xms * dt) / (sumr * sumr + sumi * sumi)
+    return (2 * xms * dt) / (sumr * sumr + sumi * sumi)
   })
 
   return { freqs, power, order }

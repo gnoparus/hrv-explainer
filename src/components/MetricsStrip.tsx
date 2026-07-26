@@ -149,7 +149,7 @@ export function MetricsStrip({
           info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome."
         />
         <div className="metrics-strip__pair-group">
-          <span className="metrics-strip__pair-group-label">FFT/Welch</span>
+          <span className="metrics-strip__pair-group-label">FFT periodogram</span>
           <div className="metrics-strip__pair">
             <MetricTile
               label="HF power"
@@ -158,7 +158,7 @@ export function MetricsStrip({
               colorVar="--c-teal"
               warming={warming}
               live={live}
-              info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises. Two estimates shown below: FFT/Welch (established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
+              info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises. Two estimates shown below: FFT/Hann periodogram (a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
             />
             <MetricTile
               label="LF power"
@@ -167,7 +167,7 @@ export function MetricsStrip({
               colorVar="--c-amber"
               warming={warming}
               live={live}
-              info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index. Two estimates shown below: FFT/Welch (established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
+              info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index. Two estimates shown below: FFT/Hann periodogram (a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
             />
           </div>
           <span className="metrics-strip__pair-group-label">Burg AR (order {arOrder})</span>
@@ -179,7 +179,7 @@ export function MetricsStrip({
               colorVar="--c-teal"
               warming={warming}
               live={live}
-              info="Same 0.15-0.4 Hz band, estimated via Burg autoregressive spectral estimation instead of FFT/Welch -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
+              info="Same 0.15-0.4 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
             />
             <MetricTile
               label="LF power"
@@ -188,7 +188,7 @@ export function MetricsStrip({
               colorVar="--c-amber"
               warming={warming}
               live={live}
-              info="Same 0.04-0.15 Hz band, estimated via Burg autoregressive spectral estimation instead of FFT/Welch -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
+              info="Same 0.04-0.15 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
             />
           </div>
         </div>
