@@ -52,6 +52,24 @@
   Use for: "RMSSD is a validated vagal-tone measure" — general claim, oncology-
   specific source. Do NOT use for anything about age.
 
+- [Rahman, F. & Goldstein, D.S. (2011) "Low-frequency power of heart rate variability is not a measure of cardiac sympathetic tone but may be a measure of modulation of cardiac autonomic outflows by baroreflexes." *Experimental Physiology*, 96(12).](https://pmc.ncbi.nlm.nih.gov/articles/PMC3224799/)
+  Proposes LF power as an index of baroreflex function/gain rather than raw
+  sympathetic tone. Reasonable reframe at the time — see Martelli 2014 below
+  for the direct test that rejects it.
+  Use for: as a proposed alternative to "LF = sympathetic tone," always
+  cited alongside Martelli 2014, never alone (the reframe itself didn't
+  survive direct testing).
+
+- [Martelli, D., Silvani, A., McAllen, R.M., May, C.N. & Ramchandra, R. (2014) "The low frequency power of heart rate variability is neither a measure of cardiac sympathetic tone nor of baroreflex sensitivity." *American Journal of Physiology-Heart and Circulatory Physiology*, 307(7).](https://pubmed.ncbi.nlm.nih.gov/25063795/)
+  Direct implanted-electrode cardiac sympathetic nerve activity (CSNA)
+  recordings in sheep (healthy + pacing-induced heart failure), cross-
+  correlated against LF HRV and directly-measured baroreflex sensitivity.
+  Conclusion: "LF HRV is neither a robust index of CSNA nor of BRS." The
+  strongest evidence in this workspace against any single-mechanism reading
+  of LF power — a direct nerve recording beats inference from HRV alone.
+  Use for: rebutting any claim that LF amplitude/power cleanly indexes one
+  autonomic branch, sympathetic or baroreflex-gain alike.
+
 ## Gaps
 
 - No primary source yet on what *should* be said instead of LF/HF for
@@ -62,14 +80,15 @@
   VLF (Shaffer & Ginsberg gives "at least 5 min" but flags mechanism
   uncertainty even then) — worth a primary source if a future lesson
   isolates VLF/ULF as its own topic.
-- No source yet defending `A_LF_BASE_MS` scaling LF amplitude off the same
-  `vagalTone` slider that drives HF — a candidate lesson 4, since LF's mixed
-  sympathetic/parasympathetic origin (lesson 1) makes that coupling an easy
-  target for a clinician who's paying attention.
 - No longitudinal (within-person, repeated-measures) HRV/biological-age
   study found yet — this is the specific evidence type `SessionHistory.tsx`'s
   copy would need to be fully defensible as written; worth searching for if
   the app copy itself gets revisited.
+- No source yet on the sympathetic-vs-vagal low-pass-filter mechanism
+  (sympathetic corner frequency ≈0.015–0.15 Hz vs. vagal >0.5 Hz) flagged in
+  lesson 4's "ask your agent" line — fetched only as search-result summaries
+  so far, not a vetted primary source. Worth chasing if a future lesson goes
+  deeper into *why* LF's origin is so hard to pin down mechanistically.
 
 ## Wisdom (Communities)
 

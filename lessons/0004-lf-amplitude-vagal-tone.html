@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lesson 4 — Why Does One Slider Drive Both LF and HF?</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+
+<h1>Why Does One Slider Drive Both LF and HF?</h1>
+<p class="subtitle">Lesson 4 · defending a simulator shortcut instead of finding one</p>
+
+<p>
+Lessons 1–3 checked claims about <em>reading</em> the simulator's output —
+LF/HF ratios, RSA resonance, RMSSD trends. This lesson checks a claim baked
+into how the simulator <em>generates</em> its input: <code>vagalTone</code>,
+the single 0–1 slider, scales <strong>both</strong>
+<code>hfAmplitudeMs()</code> and <code>lfAmplitudeMs()</code>. HF's coupling
+to vagal tone has a full physiological derivation in the code comments
+(lesson 2). LF's doesn't — it's one unexplained line:
+</p>
+
+<div class="contested">
+<strong>What your simulator actually computes</strong>
+<code>src/sim/rrGenerator.ts</code>:
+<code>lfAmplitudeMs(vagalTone) = A_LF_BASE_MS * (0.5 + 0.5 * vagalTone)</code>
+— LF amplitude ranges 12.5–25&nbsp;ms across the vagal-tone slider, with no
+independent "sympathetic" input anywhere in the model. If a clinician asks
+"why does raising vagal tone also raise your LF power?", the honest answer
+has to start with what the literature actually supports LF meaning — which
+turns out to be less settled than lesson 1's "LF is mixed origin" already
+suggested.
+</div>
+
+<h2>1. What's already established (lesson 1)</h2>
+<p>
+Billman (2013)<sup><a href="#cite1">1</a></sup> found LF variability is
+roughly half parasympathetic, a quarter sympathetic, and a quarter
+unidentified. That alone means "LF tracks vagal tone" is at best a partial
+truth. But it gets less settled from there, not more.
+</p>
+
+<h2>2. The baroreflex reframe — and its own rebuttal</h2>
+<p>
+If LF isn't cleanly sympathetic, one influential proposal is that LF power
+instead reflects <strong>baroreflex function</strong> — the gain of the
+blood-pressure-to-heart-rate feedback loop — rather than any single
+autonomic branch's tone.<sup><a href="#cite2">2</a></sup> That reframe is
+attractive: baroreflex gain is itself modulated by vagal tone, so it would
+at least gesture toward defending the app's choice.
+</p>
+<p>
+It didn't hold up. Martelli et al. (2014)<sup><a href="#cite3">3</a></sup>
+tested it directly — not by inference from HRV, but by recording cardiac
+sympathetic nerve activity straight off the nerve in sheep (pacing-induced
+heart failure and healthy controls) and cross-correlating it against LF
+HRV and directly-measured baroreflex sensitivity. Their conclusion: LF HRV
+is "neither a robust index of CSNA nor of BRS" — not sympathetic tone,
+and not baroreflex sensitivity either, contradicting the very reframe that
+was supposed to rescue LF's interpretability.
+</p>
+
+<h2>3. The evidence ladder</h2>
+<p>
+Three claims, each weaker than the last:
+</p>
+
+<div class="ladder">
+
+<details class="ladder__rung">
+<summary>
+<span class="ladder__badge ladder__badge--established">Established</span>
+<span class="ladder__claim">LF variability has mixed autonomic origin — not purely sympathetic.</span>
+</summary>
+<div class="ladder__body">
+<p>Billman (2013): parasympathetic activity accounts for roughly half of LF
+variability, sympathetic for roughly a quarter, the rest unidentified.</p>
+<p>This is the one solid floor under everything else in this lesson.</p>
+</div>
+</details>
+
+<details class="ladder__rung">
+<summary>
+<span class="ladder__badge ladder__badge--extrapolated">Proposed, then directly refuted</span>
+<span class="ladder__claim">LF power reflects baroreflex gain instead of any single autonomic branch.</span>
+</summary>
+<div class="ladder__body">
+<p class="ladder__quote">Rahman &amp; Goldstein (2011): "LF power seems to provide an index not of cardiac sympathetic tone but of baroreflex function."</p>
+<p class="ladder__quote">Martelli et al. (2014), using implanted-electrode cardiac sympathetic nerve recordings in sheep: "LF HRV is neither a robust index of CSNA nor of BRS."</p>
+<p>The 2011 reframe was reasonable when it was made. The 2014 study is the
+stronger evidence — a direct nerve recording beats an inference from HRV
+alone — and it goes against the reframe. Cite Goldstein only alongside
+Martelli, not instead of it.</p>
+</div>
+</details>
+
+<details class="ladder__rung">
+<summary>
+<span class="ladder__badge ladder__badge--extrapolated">Not supported by any cited source</span>
+<span class="ladder__claim">Scaling LF amplitude off the same "vagal tone" slider that drives HF is a physiologically validated choice.</span>
+</summary>
+<div class="ladder__body">
+<p>No paper here validates LF amplitude as a clean vagal-tone marker either
+— that claim was never on the table. Every mechanism tested (sympathetic
+tone, baroreflex sensitivity) has been tested and rejected by direct
+measurement. This isn't a defended choice; it's an undefended
+simplification.</p>
+</div>
+</details>
+
+</div>
+
+<h2>4. The honest answer, not the defensive one</h2>
+<p>
+The instinct is to search for a citation that makes the shared-slider
+design "correct." There isn't one — and reaching for Goldstein (2011) alone
+would hand a well-read clinician an easy rebuttal via Martelli (2014). The
+defensible answer is different: <strong>no single scalar cleanly explains
+LF amplitude</strong>, so the simulator doesn't pretend one does. One slider
+driving both bands is a stated simplification for a single interactive
+demo, not a claim that LF and HF share a physiological driver. That's a
+weaker-sounding answer than "we modeled the mechanism" — and it's the true
+one.
+</p>
+
+<h2>Quiz</h2>
+<div class="quiz">
+<h3>Recall check — clinician cross-examination</h3>
+<p style="font-family: var(--sans); font-size: 0.85rem; color: var(--ink-dim); margin-top: -0.5rem;">Type your answer, then check it.</p>
+
+<div class="quiz-item">
+<p class="q">1. Rahman &amp; Goldstein (2011) proposed LF power as an index of what, instead of sympathetic tone?</p>
+<input type="text" id="q1" placeholder="your answer">
+<button onclick="checkAnswer('q1', ['baroreflex function', 'baroreflex', 'baroreflex gain', 'baroreflex modulation'], 'f1')">Check</button>
+<span class="feedback" id="f1"></span>
+</div>
+
+<div class="quiz-item">
+<p class="q">2. Martelli et al. (2014) tested that proposal by directly recording cardiac sympathetic nerve activity in which animal?</p>
+<input type="text" id="q2" placeholder="your answer">
+<button onclick="checkAnswer('q2', ['sheep'], 'f2')">Check</button>
+<span class="feedback" id="f2"></span>
+</div>
+
+<div class="quiz-item">
+<p class="q">3. Does any paper cited in this lesson validate LF amplitude as a clean marker of vagal/parasympathetic tone specifically?</p>
+<input type="text" id="q3" placeholder="your answer">
+<button onclick="checkAnswer('q3', ['no'], 'f3')">Check</button>
+<span class="feedback" id="f3"></span>
+</div>
+</div>
+
+<h2>Primary source</h2>
+<p>
+Read before your defense — Martelli et al. (2014) is the strongest evidence
+here because it's a direct nerve recording, not another inference from HRV:
+<a href="https://pubmed.ncbi.nlm.nih.gov/25063795/" target="_blank" rel="noopener">"The low frequency power of heart rate variability is neither a measure of cardiac sympathetic tone nor of baroreflex sensitivity."</a>
+</p>
+
+<h2 id="citations">Citations</h2>
+<div class="citations">
+<ol>
+<li id="cite1">Billman, G.E. (2013) "The LF/HF ratio does not accurately measure cardiac sympatho-vagal balance." <em>Frontiers in Physiology</em>, 4:26. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3576706/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC3576706</a></li>
+<li id="cite2">Rahman, F. &amp; Goldstein, D.S. (2011) "Low-frequency power of heart rate variability is not a measure of cardiac sympathetic tone but may be a measure of modulation of cardiac autonomic outflows by baroreflexes." <em>Experimental Physiology</em>, 96(12). <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3224799/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC3224799</a></li>
+<li id="cite3">Martelli, D., Silvani, A., McAllen, R.M., May, C.N. &amp; Ramchandra, R. (2014) "The low frequency power of heart rate variability is neither a measure of cardiac sympathetic tone nor of baroreflex sensitivity." <em>American Journal of Physiology-Heart and Circulatory Physiology</em>, 307(7). <a href="https://pubmed.ncbi.nlm.nih.gov/25063795/" target="_blank" rel="noopener">pubmed.ncbi.nlm.nih.gov/25063795</a></li>
+</ol>
+</div>
+
+<p class="nav">
+<a href="0003-rmssd-biological-age.html">← Lesson 3: Does RMSSD Track Biological Age?</a>
+&nbsp;·&nbsp;
+<a href="../reference/claim-strength-checklist.html">Reference: Claim-Strength Checklist</a>
+&nbsp;·&nbsp;
+<a href="../reference/spectral-bands-reference.html">Reference: HRV Spectral Bands</a>
+</p>
+
+<p class="ask-agent">
+Want the derivation of why sympathetic effects on heart rate act as a
+slower low-pass filter than vagal effects (the mechanistic reason LF's
+origin is so hard to pin down), or to scope lesson 5? Ask your teaching
+agent.
+</p>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
