@@ -333,6 +333,50 @@ input[type='range']:focus-visible::-moz-range-thumb {
   flex: none;
 }
 
+/* ---------- signal legend ---------- */
+
+.signal-legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.signal-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.signal-legend__item::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.signal-legend__item--teal::before {
+  color: var(--c-teal);
+}
+
+.signal-legend__item--violet::before {
+  color: var(--c-violet);
+}
+
+.signal-legend__item--amber::before {
+  color: var(--c-amber);
+}
+
+@media (max-width: 599px) {
+  .signal-legend {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
 /* ---------- metrics strip ---------- */
 
 /* Mirrors chart-row's 3 columns (Tachogram / PSD / Poincaré) so each metric sits above

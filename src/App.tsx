@@ -153,6 +153,16 @@ function App() {
             </div>
           ) : (
             <>
+              {/* Teaches the Three-Signal Rule's color->meaning mapping once, persistently, instead
+                  of leaving it locked inside each metric tile's individual info-tag popover -- a
+                  committee member glancing between tachogram/PSD/Poincaré shouldn't have to
+                  reconstruct "what does violet mean again?" from memory (Nielsen #6). */}
+              <div className="signal-legend" aria-hidden="true">
+                <span className="signal-legend__item signal-legend__item--teal">Vagal tone &middot; HF</span>
+                <span className="signal-legend__item signal-legend__item--violet">Variability &middot; SDNN</span>
+                <span className="signal-legend__item signal-legend__item--amber">LF &middot; contested</span>
+              </div>
+
               <MetricsStrip
                 rmssdMs={active.rmssdMs}
                 sdnnMs={active.sdnnMs}
