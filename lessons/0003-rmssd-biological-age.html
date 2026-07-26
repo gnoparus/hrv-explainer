@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lesson 3 — Does RMSSD Track Biological Age?</title>
+<link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+
+<h1>Does RMSSD Track Biological Age?</h1>
+<p class="subtitle">Lesson 3 · reading citations the way a skeptical clinician will</p>
+
+<p>
+Lessons 1 and 2 covered claims your simulator actually implements — LF/HF
+banding (<code>src/sim/psd.ts</code>) and RSA resonance
+(<code>hfAmplitudeMs()</code>). This lesson covers a claim the app makes that
+<strong>nothing in the simulator models</strong>: the RMSSD tile's
+biological-age framing. There's no age parameter anywhere in
+<code>rrGenerator.ts</code> — the claim rests entirely on three cited papers.
+For your audience, that's the highest-stakes kind of claim to have on
+screen unrehearsed.
+</p>
+
+<h2>1. Two sentences, two different strengths</h2>
+<p>The app makes this claim in two places. Read them side by side:</p>
+
+<p style="font-family: var(--sans); font-size: 0.92rem;">
+<strong>RMSSD tile tooltip</strong> (<code>MetricsStrip.tsx</code>) — hedged:
+</p>
+<p class="ladder__quote" style="margin-left:0;">
+"...HRV declines with chronological age (Choi et al. 2020), and
+paced-breathing HRV has been <strong>proposed as</strong> a marker of
+biological, not just chronological, age (Russoniello et al. 2013) — a trend
+worth watching across sessions, <strong>not a fixed trajectory</strong>."
+</p>
+
+<div class="contested">
+<strong>Session-history panel note — asserted, not hedged</strong>
+"...in real repeated measurements, a rising trend <strong>tracks a younger
+biological-age profile</strong> and falling tracks age-typical autonomic
+decline (Russoniello et al. 2013; Choi et al. 2020)."
+</div>
+
+<p>
+Same two citations, different confidence. One says "proposed as... a trend
+worth watching." The other says a rising line <em>tracks</em> getting
+younger. Only one of those is something the cited papers actually test — the
+evidence ladder below shows which.
+</p>
+
+<h2>2. What the three papers actually say</h2>
+<p>
+All three citations are real papers — that was worth checking first. The
+question that matters more is narrower: does each paper support the exact
+clause it's attached to?
+</p>
+<ul>
+<li><strong>Russoniello et al. (2013)</strong><sup><a href="#cite1">1</a></sup> — validated a wearable PPG sensor against ECG for HRV, and separately asked which HRV variable best predicts age. The variable that won, with the strongest correlation (r&nbsp;=&nbsp;−0.67), was <strong>maximum variation of heart rate</strong> — not RMSSD.</li>
+<li><strong>Choi et al. (2020)</strong><sup><a href="#cite2">2</a></sup> — <strong>cross-sectional</strong> study, 291 healthy adults ages 19–69, measured once each. Every HRV index declined with age (p&lt;0.001); for a composite HRV-index, R²&nbsp;=&nbsp;0.298 — real, but roughly 70% of the variance is something other than age.</li>
+<li><strong>Martinez et al. (2024)</strong><sup><a href="#cite3">3</a></sup> — a measurement-methodology review for cardiac vagal tone <strong>in oncology patients</strong>. Validates RMSSD as a good vagal-tone estimate. Says nothing about aging at all.</li>
+</ul>
+
+<h2>3. The evidence ladder</h2>
+<p>
+Three separate claims get bundled under "biological age." Expand each rung
+to see the source next to what it's actually being asked to support.
+</p>
+
+<div class="ladder">
+
+<details class="ladder__rung">
+<summary>
+<span class="ladder__badge ladder__badge--established">Established</span>
+<span class="ladder__claim">HRV declines with chronological age.</span>
+</summary>
+<div class="ladder__body">
+<p>Choi et al. (2020), cross-sectional, n=291, ages 19–69. Every HRV index
+declined with age at p&lt;0.001.</p>
+<p class="ladder__quote">HRV-index vs. age: R² = 0.298. SDNN: R² = 0.343. LF: R² = 0.414.</p>
+<p>This is solid, ordinary epidemiology — a real, replicated population trend.
+Defend it as exactly that: HRV is lower, on average, in older people. Not
+more.</p>
+</div>
+</details>
+
+<details class="ladder__rung">
+<summary>
+<span class="ladder__badge ladder__badge--scoped">Solid, but domain-scoped</span>
+<span class="ladder__claim">RMSSD is a validated vagal-tone outcome measure.</span>
+</summary>
+<div class="ladder__body">
+<p>Martinez et al. (2024): "rMSSD is known as a good estimate of PSNS
+[parasympathetic] activity and reflects the short-term variation of HR."</p>
+<p class="ladder__quote">Scope: written for cardiac vagal tone assessment in cancer patients — not a general-population aging paper. It also notes rMSSD is "not a survival prognostic factor" in that population; SDNN does better there.</p>
+<p>Fine to cite for "RMSSD measures vagal tone" — just don't stretch it to
+cover aging, which this paper never discusses.</p>
+</div>
+</details>
+
+<details class="ladder__rung">
+<summary>
+<span class="ladder__badge ladder__badge--extrapolated">Extrapolated beyond what's shown</span>
+<span class="ladder__claim">A rising RMSSD trend across sessions means you got biologically younger.</span>
+</summary>
+<div class="ladder__body">
+<p>Neither cited paper tests a within-person trend over repeated sessions.</p>
+<p class="ladder__quote">Choi is between-person: different people measured once, not the same person tracked over time. Russoniello's strongest age correlate (r=−0.67) was maximum HR variation, not RMSSD — the metric on the app's tile isn't the one the paper validated.</p>
+<p>This is the sentence in <code>SessionHistory.tsx</code>. If a clinician
+asks "does a rising line mean my patient got younger?", the honest answer is
+no — that's not what either paper measured.</p>
+</div>
+</details>
+
+</div>
+
+<h2>4. The pitfall, named</h2>
+<p>
+The gap between rungs A and C is a specific, reusable mistake: a
+<strong>cross-sectional</strong> finding (different people, compared once)
+gets read as if it licensed a <strong>longitudinal</strong> claim (the same
+person, changing over time). A population regression line telling you older
+people average lower RMSSD says nothing about whether one person's RMSSD
+rising this week means their biological age fell. Different evidence,
+different claim — watch for this every time a paper is cited for a trend.
+</p>
+
+<h2>Quiz</h2>
+<div class="quiz">
+<h3>Recall check — clinician cross-examination</h3>
+<p style="font-family: var(--sans); font-size: 0.85rem; color: var(--ink-dim); margin-top: -0.5rem;">Type your answer, then check it.</p>
+
+<div class="quiz-item">
+<p class="q">1. Clinician: "Your patient's RMSSD rose over three sessions — did they get biologically younger?" One-word honest answer?</p>
+<input type="text" id="q1" placeholder="your answer">
+<button onclick="checkAnswer('q1', ['no'], 'f1')">Check</button>
+<span class="feedback" id="f1"></span>
+</div>
+
+<div class="quiz-item">
+<p class="q">2. Which of the three cited papers is cross-sectional (different people, one measurement each), not longitudinal?</p>
+<input type="text" id="q2" placeholder="your answer">
+<button onclick="checkAnswer('q2', ['choi', 'choi et al', 'choi et al 2020', 'choi 2020'], 'f2')">Check</button>
+<span class="feedback" id="f2"></span>
+</div>
+
+<div class="quiz-item">
+<p class="q">3. Russoniello's strongest age correlate (r = −0.67) was which HRV variable — not RMSSD?</p>
+<input type="text" id="q3" placeholder="your answer">
+<button onclick="checkAnswer('q3', ['maximum variation of heart rate', 'max variation of heart rate', 'maximum heart rate variation', 'max hr variation'], 'f3')">Check</button>
+<span class="feedback" id="f3"></span>
+</div>
+</div>
+
+<h2>Primary source</h2>
+<p>
+Read before your defense — Choi et al. (2020) is the most methodologically
+solid of the three and the one most likely to survive a clinician's
+follow-up question:
+<a href="https://www.frontiersin.org/journals/aging-neuroscience/articles/10.3389/fnagi.2020.610626/full" target="_blank" rel="noopener">"Declining Trends of Heart Rate Variability According to Aging in Healthy Asian Adults"</a>.
+</p>
+
+<h2 id="citations">Citations</h2>
+<div class="citations">
+<ol>
+<li id="cite1">Russoniello, C.V., Zhirnov, Y.N., Pougatchev, V.I. &amp; Gribkov, E.N. (2013) "Heart Rate Variability and Biological Age: Implications for Health and Gaming." <em>Cyberpsychology, Behavior, and Social Networking</em>. <a href="https://pubmed.ncbi.nlm.nih.gov/23574369/" target="_blank" rel="noopener">pubmed.ncbi.nlm.nih.gov/23574369</a></li>
+<li id="cite2">Choi, J., Cha, W. &amp; Park, M.G. (2020) "Declining Trends of Heart Rate Variability According to Aging in Healthy Asian Adults." <em>Frontiers in Aging Neuroscience</em>, 12:610626. <a href="https://www.frontiersin.org/journals/aging-neuroscience/articles/10.3389/fnagi.2020.610626/full" target="_blank" rel="noopener">frontiersin.org</a></li>
+<li id="cite3">Martinez, C. et al. (2024) "How to properly evaluate cardiac vagal tone in oncology studies: a state-of-the-art review." <em>Journal of the National Cancer Center</em>. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11256691/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC11256691</a></li>
+</ol>
+</div>
+
+<p class="nav">
+<a href="0002-rsa-resonance-curve.html">← Lesson 2: RSA Resonance Curve</a>
+&nbsp;·&nbsp;
+<a href="../reference/claim-strength-checklist.html">Reference: Claim-Strength Checklist</a>
+&nbsp;·&nbsp;
+<a href="../reference/spectral-bands-reference.html">Reference: HRV Spectral Bands</a>
+</p>
+
+<p class="ask-agent">
+Want to see the exact <code>SessionHistory.tsx</code> line flagged here as an
+app-copy follow-up, or start scoping lesson 4 (the <code>A_LF_BASE_MS</code>
+constant that couples LF amplitude to the same <code>vagalTone</code> slider
+as HF)? Ask your teaching agent.
+</p>
+
+<script src="../assets/quiz.js"></script>
+</body>
+</html>
