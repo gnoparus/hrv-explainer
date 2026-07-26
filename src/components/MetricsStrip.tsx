@@ -80,39 +80,44 @@ export function MetricsStrip({
   const warming = beatCount < 8
   return (
     <div className="metrics-strip-wrap">
+      {/* 3 columns mirror chart-row below: RMSSD sits above the Tachogram it summarizes,
+          HF+LF sit paired above the one PSD chart they're both read from, SDNN sits above
+          the Poincaré spread it summarizes. */}
       <div className="metrics-strip">
-      <MetricTile
-        label="RMSSD"
-        value={rmssdMs}
-        unit="ms"
-        colorVar="--c-teal"
-        warming={warming}
-        info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome."
-      />
-      <MetricTile
-        label="SDNN"
-        value={sdnnMs}
-        unit="ms"
-        colorVar="--c-violet"
-        warming={warming}
-        info="SD of all RR intervals in the window -- total variability, both autonomic branches, not vagal-specific."
-      />
-      <MetricTile
-        label="HF power"
-        value={hfPower}
-        unit="ms²"
-        colorVar="--c-teal"
-        warming={warming}
-        info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises."
-      />
-      <MetricTile
-        label="LF power"
-        value={lfPower}
-        unit="ms²"
-        colorVar="--c-amber"
-        warming={warming}
-        info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index."
-      />
+        <MetricTile
+          label="RMSSD"
+          value={rmssdMs}
+          unit="ms"
+          colorVar="--c-teal"
+          warming={warming}
+          info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome."
+        />
+        <div className="metrics-strip__pair">
+          <MetricTile
+            label="HF power"
+            value={hfPower}
+            unit="ms²"
+            colorVar="--c-teal"
+            warming={warming}
+            info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises."
+          />
+          <MetricTile
+            label="LF power"
+            value={lfPower}
+            unit="ms²"
+            colorVar="--c-amber"
+            warming={warming}
+            info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index."
+          />
+        </div>
+        <MetricTile
+          label="SDNN"
+          value={sdnnMs}
+          unit="ms"
+          colorVar="--c-violet"
+          warming={warming}
+          info="SD of all RR intervals in the window -- total variability, both autonomic branches, not vagal-specific."
+        />
       </div>
       <div className="metrics-strip__caption">{warming ? 'collecting baseline…' : 'rolling 60s window'}</div>
     </div>

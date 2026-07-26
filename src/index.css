@@ -15,6 +15,15 @@
   --sans: -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, system-ui, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
+  /* Spacing scale (documented in DESIGN.md, now actually wired up). Tight grouping uses
+     the low end (space-1/2), generous separation between distinct zones uses the high
+     end (space-5) -- see .app / .app__readout for the tight-vs-generous contrast. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+
   color-scheme: dark;
   font: 17px/1.4 var(--sans);
   color: var(--text);
@@ -70,7 +79,14 @@ input[type='range']:focus-visible::-moz-range-thumb {
 .app {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* Centered, not top-pinned: on a tall/landscape viewport the content now sizes to its
+     own content height (see .app__readout below) rather than a flex:1 chart-row stretching
+     to fill leftover space, so without this it would float at the top with a dead void
+     underneath. Centering reads as an intentional composition instead. Content that's
+     taller than the viewport (mobile/portrait) still scrolls normally via overflow-y. */
+  justify-content: center;
+  /* Generous gap: separates the read zone (data) from the controls (input) below it. */
+  gap: var(--space-5);
   height: 100svh;
   overflow-y: auto;
   overflow-x: hidden;
@@ -78,10 +94,17 @@ input[type='range']:focus-visible::-moz-range-thumb {
     max(16px, env(safe-area-inset-left));
 }
 
+.app__readout {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  /* Tight gap: header, metrics, and charts are all one related "read" cluster. */
+  gap: var(--space-2);
+}
+
 .app__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
 .app__title {
@@ -121,8 +144,12 @@ input[type='range']:focus-visible::-moz-range-thumb {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
   min-height: 240px;
+  /* Panels size to their own aspect-ratio-driven content height, not stretched to fill
+     whatever's left of a tall viewport -- grid's default stretch left dead space below
+     each fixed-aspect-ratio chart once flex:1 gave the row more height than it needed. */
+  align-items: start;
 }
 
 @media (max-width: 800px), (orientation: portrait) {
@@ -135,6 +162,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
     flex: none;
     grid-template-columns: 1fr;
     grid-auto-rows: 200px;
+    align-items: stretch;
   }
 
   .chart-row .panel__svg--square,
@@ -151,10 +179,20 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 /* ---------- metrics strip ---------- */
 
+/* Mirrors chart-row's 3 columns (Tachogram / PSD / Poincaré) so each metric sits above
+   the chart it's derived from: RMSSD above the tachogram, HF+LF above the PSD they're
+   both read off of, SDNN above the Poincaré spread it summarizes. Proximity does the
+   explaining instead of a caption. */
 .metrics-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.metrics-strip__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
 }
 
 .metrics-strip__caption {
@@ -165,9 +203,9 @@ input[type='range']:focus-visible::-moz-range-thumb {
   letter-spacing: 0.4px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px), (orientation: portrait) {
   .metrics-strip {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
@@ -389,7 +427,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 24px;
+  gap: var(--space-5);
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -400,7 +438,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 1;
   min-width: 0;
 }
@@ -453,7 +491,7 @@ input[type='range']::-webkit-slider-thumb {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .control__preset-label {
