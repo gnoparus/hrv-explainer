@@ -44,6 +44,8 @@ export function UploadControls({
             <span className="upload-summary__name">{value.fileName}</span>
             <span className="upload-summary__stats">
               {value.points.length} beats · {Math.round(value.points[value.points.length - 1].t)}s recording
+              {value.skippedLines > 0 &&
+                ` · ${value.skippedLines} line${value.skippedLines === 1 ? '' : 's'} skipped (unreadable or implausible)`}
             </span>
           </div>
           <div className="preset-buttons">
