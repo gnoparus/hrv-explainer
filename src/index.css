@@ -500,6 +500,18 @@ input[type='range']:focus-visible::-moz-range-thumb {
   margin-bottom: 4px;
 }
 
+.session-history__further-reading {
+  display: inline-block;
+  margin-top: var(--space-4);
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.session-history__further-reading:hover {
+  color: var(--c-teal);
+}
+
 .panel__svg {
   flex: 1;
   width: 100%;
