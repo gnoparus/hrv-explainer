@@ -130,10 +130,10 @@ export function MetricsStrip({
     <div className="metrics-strip-wrap">
       <div className="window-toggle" role="group" aria-label="Metrics window">
         <button type="button" aria-pressed={!isClinical} onClick={() => onMetricsWindowChange('live')}>
-          60s live
+          60s Live
         </button>
         <button type="button" aria-pressed={isClinical} onClick={() => onMetricsWindowChange('clinical')}>
-          5 min clinical
+          5 min Clinical
         </button>
       </div>
       {/* 3 columns mirror chart-row below: RMSSD sits above the Tachogram it summarizes,

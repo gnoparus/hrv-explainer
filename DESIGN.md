@@ -1,5 +1,5 @@
 ---
-name: HRV Explainer
+name: HRV Simulator
 description: Interactive R-R interval / HRV simulator for live thesis-defense demos and teaching
 colors:
   void: "#05080b"
@@ -68,7 +68,7 @@ components:
     padding: "6px 14px"
 ---
 
-# Design System: HRV Explainer
+# Design System: HRV Simulator
 
 ## 1. Overview
 

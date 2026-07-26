@@ -1,4 +1,4 @@
-# HRV Explainer
+# HRV Simulator
 
 Interactive R-R interval / HRV simulator. Drag breathing rate and vagal tone,
 watch RMSSD, SDNN, and the LF/HF spectral split respond in real time. Built for
