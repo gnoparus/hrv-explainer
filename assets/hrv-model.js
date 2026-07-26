@@ -19,10 +19,21 @@ var HRV_MODEL = (function () {
   }
 
   // Respiratory (RSA) oscillator amplitude -- resonance curve peaking at 0.1 Hz.
-  function hfAmplitudeMs(brpm) {
+  // vagalTone defaults to 1 (matches the fixed assumption noted above) so
+  // existing callers that pass only brpm are unaffected.
+  function hfAmplitudeMs(brpm, vagalTone) {
+    if (vagalTone === undefined) vagalTone = 1;
     var fHz = hzOf(brpm);
     var gauss = Math.exp(-Math.pow(fHz - F_RES_HZ, 2) / (2 * SIGMA_HF_HZ * SIGMA_HF_HZ));
-    return A_HF_FLOOR_MS + (A_HF_PEAK_MS - A_HF_FLOOR_MS) * gauss;
+    return vagalTone * (A_HF_FLOOR_MS + (A_HF_PEAK_MS - A_HF_FLOOR_MS) * gauss);
+  }
+
+  // Baroreflex (LF) oscillator amplitude -- see src/sim/rrGenerator.ts
+  // lfAmplitudeMs(). Lesson 4's subject: this scales off vagalTone with no
+  // cited physiological derivation, unlike hfAmplitudeMs's resonance curve.
+  function lfAmplitudeMs(vagalTone) {
+    if (vagalTone === undefined) vagalTone = 1;
+    return A_LF_BASE_MS * (0.5 + 0.5 * vagalTone);
   }
 
   // Simplified teaching proxy: successive-difference RMS ~ amplitude * frequency
@@ -72,6 +83,7 @@ var HRV_MODEL = (function () {
     hzOf: hzOf,
     isHf: isHf,
     hfAmplitudeMs: hfAmplitudeMs,
+    lfAmplitudeMs: lfAmplitudeMs,
     rmssdProxy: rmssdProxy,
     bandPower: bandPower,
   };

@@ -33,6 +33,31 @@ turns out to be less settled than lesson 1's "LF is mixed origin" already
 suggested.
 </div>
 
+<div class="widget">
+<h3>Try it: one slider, two outputs</h3>
+<div class="slider-row">
+  <input type="range" id="vagal" min="0" max="1" step="0.01" value="0.5">
+  <output id="vagal-out">0.50</output>
+</div>
+<svg id="bar-chart" viewBox="0 0 640 180" preserveAspectRatio="xMidYMid meet"></svg>
+<div class="legend">
+  <span><span class="swatch block" style="background:#0e9a86"></span>HF amplitude (at a fixed 15 br/min)</span>
+  <span><span class="swatch block" style="background:#c98a2e"></span>LF amplitude</span>
+</div>
+<div class="readout">
+<div><strong>HF amplitude</strong><span id="ro-hf">—</span></div>
+<div><strong>LF amplitude</strong><span id="ro-lf">—</span></div>
+</div>
+<p class="caption">
+This is <code>hfAmplitudeMs()</code> and <code>lfAmplitudeMs()</code>, the
+app's real formulas, not a simplified proxy. Drag the slider: both bars move
+from the same one input. That's the entire claim under examination in this
+lesson — visibly, not just in the code. Nothing here shows the coupling is
+<em>wrong</em>; it shows there's no cited mechanism making it
+<em>right</em>, either.
+</p>
+</div>
+
 <h2>1. What's already established (lesson 1)</h2>
 <p>
 Billman (2013)<sup><a href="#cite1">1</a></sup> found LF variability is
@@ -183,5 +208,62 @@ agent.
 </p>
 
 <script src="../assets/quiz.js"></script>
+<script src="../assets/hrv-model.js"></script>
+<script>
+(function () {
+  var FIXED_BRPM = 15;
+  var slider = document.getElementById('vagal');
+  var out = document.getElementById('vagal-out');
+  var roHf = document.getElementById('ro-hf');
+  var roLf = document.getElementById('ro-lf');
+  var chart = document.getElementById('bar-chart');
+
+  var W = 640, H = 180, PAD = 20, BAR_W = 160, GAP = 80;
+  var MAX_MS = 65; // headroom above HF's peak (60ms) and LF's max (25ms)
+  var svgns = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(svgns, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  var scale = (H - PAD * 2) / MAX_MS;
+  var barsX = [W / 2 - GAP / 2 - BAR_W, W / 2 + GAP / 2];
+  var rects = [
+    el('rect', { x: barsX[0], y: H - PAD, width: BAR_W, height: 0, fill: '#0e9a86', rx: 3 }),
+    el('rect', { x: barsX[1], y: H - PAD, width: BAR_W, height: 0, fill: '#c98a2e', rx: 3 }),
+  ];
+  var labels = [
+    el('text', { x: barsX[0] + BAR_W / 2, y: H - PAD, 'text-anchor': 'middle', 'font-size': '13', 'font-family': 'var(--sans)', fill: 'currentColor' }),
+    el('text', { x: barsX[1] + BAR_W / 2, y: H - PAD, 'text-anchor': 'middle', 'font-size': '13', 'font-family': 'var(--sans)', fill: 'currentColor' }),
+  ];
+  chart.appendChild(el('line', { x1: PAD, x2: W - PAD, y1: H - PAD, y2: H - PAD, stroke: '#d8d4c8' }));
+  rects.forEach(function (r) { chart.appendChild(r); });
+  labels.forEach(function (t) { chart.appendChild(t); });
+
+  function update() {
+    var vagalTone = parseFloat(slider.value);
+    out.textContent = vagalTone.toFixed(2);
+
+    var hf = HRV_MODEL.hfAmplitudeMs(FIXED_BRPM, vagalTone);
+    var lf = HRV_MODEL.lfAmplitudeMs(vagalTone);
+
+    roHf.textContent = hf.toFixed(1) + ' ms';
+    roLf.textContent = lf.toFixed(1) + ' ms';
+
+    [hf, lf].forEach(function (v, i) {
+      var h = Math.max(2, v * scale);
+      rects[i].setAttribute('y', H - PAD - h);
+      rects[i].setAttribute('height', h);
+      labels[i].setAttribute('y', H - PAD - h - 8);
+      labels[i].textContent = v.toFixed(1) + ' ms';
+    });
+  }
+
+  slider.addEventListener('input', update);
+  update();
+})();
+</script>
 </body>
 </html>
