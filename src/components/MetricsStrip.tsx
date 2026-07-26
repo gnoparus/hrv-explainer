@@ -71,6 +71,9 @@ export function MetricsStrip({
   sdnnMs,
   lfPower,
   hfPower,
+  lfPowerAr,
+  hfPowerAr,
+  arOrder,
   beatCount,
   metricsWindow,
   onMetricsWindowChange,
@@ -81,6 +84,9 @@ export function MetricsStrip({
   sdnnMs: number
   lfPower: number
   hfPower: number
+  lfPowerAr: number
+  hfPowerAr: number
+  arOrder: number
   beatCount: number
   metricsWindow: MetricsWindow
   onMetricsWindowChange: (w: MetricsWindow) => void
@@ -126,23 +132,45 @@ export function MetricsStrip({
           warming={warming}
           info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome."
         />
-        <div className="metrics-strip__pair">
-          <MetricTile
-            label="HF power"
-            value={hfPower}
-            unit="ms²"
-            colorVar="--c-teal"
-            warming={warming}
-            info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises."
-          />
-          <MetricTile
-            label="LF power"
-            value={lfPower}
-            unit="ms²"
-            colorVar="--c-amber"
-            warming={warming}
-            info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index."
-          />
+        <div className="metrics-strip__pair-group">
+          <span className="metrics-strip__pair-group-label">FFT/Welch</span>
+          <div className="metrics-strip__pair">
+            <MetricTile
+              label="HF power"
+              value={hfPower}
+              unit="ms²"
+              colorVar="--c-teal"
+              warming={warming}
+              info="Spectral power 0.15-0.4 Hz. Respiration-linked, vagally mediated. At slow paced breathing (~6/min) the respiratory peak moves into the LF band, so HF power can drop even as RMSSD rises. Two estimates shown below: FFT/Welch (established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
+            />
+            <MetricTile
+              label="LF power"
+              value={lfPower}
+              unit="ms²"
+              colorVar="--c-amber"
+              warming={warming}
+              info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index. Two estimates shown below: FFT/Welch (established clinical-standard method) and Burg autoregressive -- expect close agreement; a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
+            />
+          </div>
+          <span className="metrics-strip__pair-group-label">Burg AR (order {arOrder})</span>
+          <div className="metrics-strip__pair">
+            <MetricTile
+              label="HF power"
+              value={hfPowerAr}
+              unit="ms²"
+              colorVar="--c-teal"
+              warming={warming}
+              info="Same 0.15-0.4 Hz band, estimated via Burg autoregressive spectral estimation instead of FFT/Welch -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
+            />
+            <MetricTile
+              label="LF power"
+              value={lfPowerAr}
+              unit="ms²"
+              colorVar="--c-amber"
+              warming={warming}
+              info="Same 0.04-0.15 Hz band, estimated via Burg autoregressive spectral estimation instead of FFT/Welch -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
+            />
+          </div>
         </div>
         <MetricTile
           label="SDNN"

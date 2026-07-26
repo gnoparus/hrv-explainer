@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { RRGenerator } from './rrGenerator'
 import { rmssd, sdnn } from './metrics'
 import { computePsd, bandPower, LF_BAND, HF_BAND, type PsdResult } from './psd'
+import { computePsdAr, type PsdArResult } from './psdAr'
 
 const DISPLAY_WINDOW_SECONDS = 5 * 60 // tachogram/Poincare: clinical short-term duration, for visual continuity
 const METRICS_WINDOW_SECONDS = 60 // "live" metrics: shorter so a slider drag visibly moves the numbers in a demo
@@ -18,6 +19,9 @@ export interface WindowMetrics {
   lfPower: number
   hfPower: number
   psd: PsdResult
+  lfPowerAr: number
+  hfPowerAr: number
+  psdAr: PsdArResult
 }
 
 export interface HrvSnapshot {
@@ -28,7 +32,16 @@ export interface HrvSnapshot {
   clinicalReadySec: number // seconds of data buffered toward the 5-min clinical window, capped at 300
 }
 
-const EMPTY_WINDOW: WindowMetrics = { rmssdMs: 0, sdnnMs: 0, lfPower: 0, hfPower: 0, psd: { freqs: [], power: [] } }
+const EMPTY_WINDOW: WindowMetrics = {
+  rmssdMs: 0,
+  sdnnMs: 0,
+  lfPower: 0,
+  hfPower: 0,
+  psd: { freqs: [], power: [] },
+  lfPowerAr: 0,
+  hfPowerAr: 0,
+  psdAr: { freqs: [], power: [], order: 0 },
+}
 
 const EMPTY_SNAPSHOT: HrvSnapshot = {
   points: [],
@@ -65,12 +78,16 @@ function computeWindowMetrics(points: { t: number; rrMs: number }[]): WindowMetr
   const rrValues = points.map((p) => p.rrMs)
   const times = points.map((p) => p.t)
   const psd = computePsd(times, rrValues)
+  const psdAr = computePsdAr(times, rrValues)
   return {
     rmssdMs: rmssd(rrValues),
     sdnnMs: sdnn(rrValues),
     lfPower: bandPower(psd.freqs, psd.power, ...LF_BAND),
     hfPower: bandPower(psd.freqs, psd.power, ...HF_BAND),
     psd,
+    lfPowerAr: bandPower(psdAr.freqs, psdAr.power, ...LF_BAND),
+    hfPowerAr: bandPower(psdAr.freqs, psdAr.power, ...HF_BAND),
+    psdAr,
   }
 }
 
