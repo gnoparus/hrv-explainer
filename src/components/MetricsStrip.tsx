@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { InfoTag } from './InfoTag'
-import { METRICS_WINDOW_SECONDS } from '../sim/useHrvSimulation'
+import { METRICS_WINDOW_SECONDS, CLINICAL_WINDOW_SECONDS } from '../sim/useHrvSimulation'
 
 interface MetricTileProps {
   label: string
@@ -142,12 +142,13 @@ export function MetricsStrip({
   // no direct interaction to key off: the initial cold-start reveal and a preset/reset's
   // post-jump settle (see markParamJump).
   //
-  // Two announcements per settle, not one: the live 60s window takes up to METRICS_WINDOW_SECONDS
-  // to fully mature after a reset (see useHrvSimulation), so a single announcement shortly after
-  // the user stops interacting would speak a still-converging mid-window value and then never
-  // update again. The quick one gives immediate "something changed" feedback (parity with the
-  // sighted delta arrows firing right away); the second, once the window's had enough real time
-  // to refill, speaks the actually-settled reading.
+  // Two announcements per settle, not one: the active window takes up to its own maturation
+  // time to fully refill after a reset (see useHrvSimulation) -- METRICS_WINDOW_SECONDS (60s)
+  // for the live window, CLINICAL_WINDOW_SECONDS (300s) for clinical -- so a single
+  // announcement shortly after the user stops interacting would speak a still-converging
+  // mid-window value and then never update again. The quick one gives immediate "something
+  // changed" feedback (parity with the sighted delta arrows firing right away); the second,
+  // timed to the *selected* window's own readiness, speaks the actually-settled reading.
   const latestRef = useRef({ rmssdMs, sdnnMs, hfPower, lfPower })
   latestRef.current = { rmssdMs, sdnnMs, hfPower, lfPower }
   const [announcement, setAnnouncement] = useState('')
@@ -160,13 +161,14 @@ export function MetricsStrip({
           `HF power ${v.hfPower.toFixed(1)}, LF power ${v.lfPower.toFixed(1)}`,
       )
     }
+    const windowSeconds = isClinical ? CLINICAL_WINDOW_SECONDS : METRICS_WINDOW_SECONDS
     const soonId = setTimeout(announce, 900)
-    const settledId = setTimeout(announce, METRICS_WINDOW_SECONDS * 1000)
+    const settledId = setTimeout(announce, windowSeconds * 1000)
     return () => {
       clearTimeout(soonId)
       clearTimeout(settledId)
     }
-  }, [warming, announceTrigger])
+  }, [warming, announceTrigger, isClinical])
 
   return (
     <div className="metrics-strip-wrap">
