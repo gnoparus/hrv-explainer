@@ -1,0 +1,47 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Full-bleed background, no corner rounding; the OS applies its own mask shape -->
+  <rect width="512" height="512" fill="#05080b" />
+
+  <!-- Heart + trace, scaled down and centered to stay inside the roughly-80% maskable safe zone -->
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <polygon
+      points="50,95 15,55 0,35 5,10 25,0 50,20 75,0 95,10 100,35 85,55"
+      transform="translate(76 90) scale(3.6 3.6)"
+      fill="none"
+      stroke="#2fe7c9"
+      stroke-width="3.9"
+      stroke-linejoin="round"
+      opacity="0.9"
+      filter="url(#softGlow)"
+    />
+    <polyline
+      points="76,306 176,306 206,246 236,346 266,286 296,306 436,306"
+      fill="none"
+      stroke="#b18bff"
+      stroke-width="12"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.55"
+      filter="url(#softGlow)"
+    />
+    <polyline
+      points="66,256 176,256 216,166 256,346 296,206 326,256 446,256"
+      fill="none"
+      stroke="#2fe7c9"
+      stroke-width="16"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      filter="url(#softGlow)"
+    />
+  </g>
+</svg>
