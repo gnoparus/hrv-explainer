@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Lesson 1 — Spectral HRV Pitfalls</title>
 <link rel="stylesheet" href="assets/lesson.css">
 </head>
@@ -171,8 +172,10 @@ function checkAnswer(inputId, accepted, feedbackId) {
 
   function drawChart(lfPower, hfPower) {
     while (chart.firstChild) chart.removeChild(chart.firstChild);
-    var maxPower = Math.max(lfPower, hfPower, 700); // 700 ~= baroreflex-floor scale, keeps bars comparable frame to frame
-    var scale = (H - PAD * 2) / maxPower;
+    // Fixed scale (not recomputed per frame) so a bar's height means the same
+    // thing on every drag step -- an unchanged power value must render at an
+    // unchanged height, even while the other bar is moving.
+    var scale = (H - PAD * 2) / HRV_MODEL.MAX_BAND_POWER;
     var barsX = [W / 2 - GAP / 2 - BAR_W, W / 2 + GAP / 2];
     var powers = [lfPower, hfPower];
     var colors = ['#c98a2e', '#0e9a86'];
@@ -205,9 +208,8 @@ function checkAnswer(inputId, accepted, feedbackId) {
     var pct = Math.min(100, Math.max(0, (fHz - AXIS_MIN_HZ) / (AXIS_MAX_HZ - AXIS_MIN_HZ) * 100));
     marker.style.left = pct + '%';
 
-    var inHf = fHz >= HRV_MODEL.HF_BAND[0];
-    whichBand.textContent = inHf ? 'HF' : 'LF';
-    whichBand.style.color = inHf ? '#0e9a86' : '#c98a2e';
+    whichBand.textContent = split.isHf ? 'HF' : 'LF';
+    whichBand.style.color = split.isHf ? '#0e9a86' : '#c98a2e';
 
     drawChart(split.lfPower, split.hfPower);
 
