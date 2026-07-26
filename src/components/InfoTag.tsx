@@ -6,10 +6,13 @@ import { useEffect, useRef, useState } from 'react'
 const POPOVER_WIDTH = 240
 const VIEWPORT_MARGIN = 16
 
+let nextId = 0
+
 export function InfoTag({ text }: { text: string }) {
   const [open, setOpen] = useState(false)
   const [popoverLeft, setPopoverLeft] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
+  const popoverId = useRef(`info-tag-popover-${nextId++}`).current
 
   useEffect(() => {
     if (!open) return
@@ -56,12 +59,13 @@ export function InfoTag({ text }: { text: string }) {
         className="info-tag__btn"
         aria-label="What is this metric?"
         aria-expanded={open}
+        aria-controls={popoverId}
         onClick={() => setOpen((o) => !o)}
       >
         i
       </button>
       {open && (
-        <span className="info-tag__popover" role="tooltip" style={{ left: popoverLeft }} onClick={() => setOpen(false)}>
+        <span id={popoverId} className="info-tag__popover" style={{ left: popoverLeft }} onClick={() => setOpen(false)}>
           {text}
         </span>
       )}
