@@ -319,6 +319,16 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--paper);
 }
 
+/* At narrow widths the LF chip is ~106px -- "LF (0.04-0.15 Hz)" doesn't fit and silently
+   clips (centered flex content overflowing both sides doesn't reliably show an ellipsis).
+   Drop the parenthetical range and keep just "LF"/"HF"; the ranges are already stated in
+   the surrounding prose. */
+@media (max-width: 520px) {
+  .freq-axis__band-detail {
+    display: none;
+  }
+}
+
 .freq-axis__marker {
   position: absolute;
   top: 4px;
