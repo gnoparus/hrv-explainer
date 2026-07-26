@@ -12,15 +12,22 @@ function Sparkline({ sessions }: { sessions: Session[] }) {
     const x = scaleLinear()
       .domain([0, Math.max(1, sessions.length - 1)])
       .range([SPARK_MARGIN, SPARK_W - SPARK_MARGIN])
-    const maxV = Math.max(...values, 1)
+    const minV = Math.min(...values)
+    const maxV = Math.max(...values)
+    // Pad around the actual min/max instead of anchoring at 0 -- with a realistic 2-3 saved
+    // sessions per demo, close RMSSD values (e.g. 17.5ms/17.9ms) rendered against a 0-anchored
+    // domain draw as a flat line. The maxV*0.05/1ms floors keep some pad when every value is
+    // identical, where (maxV-minV)*0.2 alone would collapse to 0.
+    const pad = Math.max((maxV - minV) * 0.2, maxV * 0.05, 1)
     const y = scaleLinear()
-      .domain([0, maxV * 1.1])
+      .domain([minV - pad, maxV + pad])
       .range([SPARK_H - SPARK_MARGIN, SPARK_MARGIN])
     const lineGen = d3line<number>()
       .x((_, i) => x(i))
       .y((v) => y(v))
       .curve(curveMonotoneX)
-    return { path: lineGen(values) ?? '', gridY: y(0) }
+    const mean = values.reduce((a, b) => a + b, 0) / values.length
+    return { path: lineGen(values) ?? '', gridY: y(mean) }
   }, [sessions])
 
   return (
@@ -90,6 +97,14 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
           hit <strong>Save session</strong>, and it will show up here for comparison and trend
           tracking across runs.
         </div>
+        <a
+          className="session-history__further-reading"
+          href="/learn/0001-spectral-hrv-pitfalls.html"
+          target="_blank"
+          rel="noopener"
+        >
+          Further reading: why LF/HF, VLF, and ULF get over-interpreted →
+        </a>
       </div>
     )
   }
@@ -137,6 +152,15 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
             </div>
           ))}
       </div>
+
+      <a
+        className="session-history__further-reading"
+        href="/learn/0001-spectral-hrv-pitfalls.html"
+        target="_blank"
+        rel="noopener"
+      >
+        Further reading: why LF/HF, VLF, and ULF get over-interpreted →
+      </a>
     </div>
   )
 }
