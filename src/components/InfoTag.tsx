@@ -1,21 +1,49 @@
 import { useEffect, useRef, useState } from 'react'
 
 // Tap-to-reveal definition, touch-first (no hover dependency).
+// Keep POPOVER_WIDTH/VIEWPORT_MARGIN in sync with .info-tag__popover's width/max-width in
+// index.css -- the clamp math below has to reason about the same rendered width CSS produces.
+const POPOVER_WIDTH = 240
+const VIEWPORT_MARGIN = 16
+
 export function InfoTag({ text }: { text: string }) {
   const [open, setOpen] = useState(false)
+  const [popoverLeft, setPopoverLeft] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
     if (!open) return
+
+    // Clamp against both viewport edges (not a binary left/right flip) -- a tag near the
+    // left edge can overflow left just as easily as one near the right edge overflows
+    // right once the popover is that wide.
+    function recomputeOffset() {
+      if (!ref.current) return
+      const rect = ref.current.getBoundingClientRect()
+      // CSS shrinks the popover below POPOVER_WIDTH via max-width once the viewport is
+      // narrower than POPOVER_WIDTH + 2*VIEWPORT_MARGIN -- clamp against its actual
+      // rendered width, not the nominal one, or this over-shifts on narrow viewports and
+      // clips a popover that would otherwise fit.
+      const renderedWidth = Math.min(POPOVER_WIDTH, window.innerWidth - 2 * VIEWPORT_MARGIN)
+      const minOffset = VIEWPORT_MARGIN - rect.left
+      const maxOffset = window.innerWidth - VIEWPORT_MARGIN - renderedWidth - rect.left
+      setPopoverLeft(Math.min(Math.max(0, minOffset), maxOffset))
+    }
+
     function onPointerDown(e: PointerEvent) {
       if (!ref.current?.contains(e.target as Node)) setOpen(false)
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
     }
+    recomputeOffset()
+    // Rotating or resizing the actual demo device (iPad) while a popover is open must not
+    // leave it clamped against a viewport size that no longer exists.
+    window.addEventListener('resize', recomputeOffset)
     document.addEventListener('pointerdown', onPointerDown)
     document.addEventListener('keydown', onKeyDown)
     return () => {
+      window.removeEventListener('resize', recomputeOffset)
       document.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
@@ -33,7 +61,7 @@ export function InfoTag({ text }: { text: string }) {
         i
       </button>
       {open && (
-        <span className="info-tag__popover" role="tooltip" onClick={() => setOpen(false)}>
+        <span className="info-tag__popover" role="tooltip" style={{ left: popoverLeft }} onClick={() => setOpen(false)}>
           {text}
         </span>
       )}

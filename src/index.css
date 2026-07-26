@@ -10,9 +10,19 @@
   --c-violet: #b18bff;
   --c-amber: #ffc857;
   --c-red: #ff6b6b;
+  --thumb: #fff;
 
   --sans: -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, system-ui, sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Spacing scale (documented in DESIGN.md, now actually wired up). Tight grouping uses
+     the low end (space-1/2), generous separation between distinct zones uses the high
+     end (space-5) -- see .app / .app__readout for the tight-vs-generous contrast. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
 
   color-scheme: dark;
   font: 17px/1.4 var(--sans);
@@ -43,12 +53,34 @@ button {
   color: inherit;
 }
 
+:focus-visible {
+  outline: 2px solid var(--c-teal);
+  outline-offset: 2px;
+}
+
+input[type='range']:focus-visible {
+  outline: none;
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 6px var(--c-teal);
+}
+
+input[type='range']:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 6px var(--c-teal);
+}
+
 /* ---------- layout ---------- */
 
 .app {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  /* Generous gap: separates the read zone (data) from the controls (input) below it. */
+  gap: var(--space-5);
   height: 100svh;
   overflow-y: auto;
   overflow-x: hidden;
@@ -56,10 +88,24 @@ button {
     max(16px, env(safe-area-inset-left));
 }
 
+.app__readout {
+  /* Auto margins, not .app{justify-content:center} -- on a tall/landscape viewport this
+     still centers the block (extra space splits evenly above .app__readout and below
+     .controls-bar), but unlike justify-content:center, auto margins collapse to 0 instead
+     of distributing NEGATIVE space when content overflows -- centering via alignment
+     would otherwise push the header/top metrics above the scroll origin, unreachable via
+     overflow-y (real bug, caught on mobile portrait where content exceeds 100svh). */
+  margin-top: auto;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  /* Tight gap: header, metrics, and charts are all one related "read" cluster. */
+  gap: var(--space-2);
+}
+
 .app__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
 }
 
 .app__title {
@@ -95,50 +141,60 @@ button {
   }
 }
 
-.export-btn {
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-weight: 500;
-  min-height: 44px;
-}
-
-.export-btn:active {
-  border-color: var(--c-teal);
-}
-
-.export-btn--saved {
-  border-color: var(--c-teal);
-  color: var(--c-teal);
-}
-
 .chart-row {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
   min-height: 240px;
+  /* Panels size to their own aspect-ratio-driven content height, not stretched to fill
+     whatever's left of a tall viewport -- grid's default stretch left dead space below
+     each fixed-aspect-ratio chart once flex:1 gave the row more height than it needed. */
+  align-items: start;
 }
 
 @media (max-width: 800px), (orientation: portrait) {
+  /* Deterministic row height, not flex:1 -- mixing flex-shrink with grid's 1fr rows let
+     the browser silently drop the 3rd panel instead of resizing it. The page scrolls as
+     one normal document below this point (via .app's own overflow-y) instead of nesting
+     a second scrollbar inside chart-row -- that nested scroll-within-scroll was the
+     original anti-pattern, not scrolling itself. */
   .chart-row {
+    flex: none;
     grid-template-columns: 1fr;
-    overflow-y: auto;
+    grid-auto-rows: 200px;
+    align-items: stretch;
+  }
+
+  .chart-row .panel__svg--square,
+  .chart-row .panel__svg--wide {
+    aspect-ratio: auto;
+    flex: 1;
+    min-height: 0;
   }
 }
 
 .controls-bar {
   flex: none;
+  margin-bottom: auto;
 }
 
 /* ---------- metrics strip ---------- */
 
+/* Mirrors chart-row's 3 columns (Tachogram / PSD / Poincaré) so each metric sits above
+   the chart it's derived from: RMSSD above the tachogram, HF+LF above the PSD they're
+   both read off of, SDNN above the Poincaré spread it summarizes. Proximity does the
+   explaining instead of a caption. */
 .metrics-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.metrics-strip__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
 }
 
 .metrics-strip__caption {
@@ -149,9 +205,9 @@ button {
   letter-spacing: 0.4px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px), (orientation: portrait) {
   .metrics-strip {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
@@ -188,6 +244,36 @@ button {
   margin-left: 4px;
 }
 
+.metric-tile__value--warming {
+  color: var(--text-dim);
+  text-shadow: none;
+}
+
+.metric-tile__delta {
+  font-size: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+  display: inline-block;
+  animation: deltaFade 0.9s ease-out forwards;
+}
+
+@keyframes deltaFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metric-tile__delta {
+    animation: none;
+  }
+}
+
 /* ---------- info tag ---------- */
 
 .info-tag {
@@ -217,6 +303,7 @@ button {
   top: 26px;
   left: 0;
   width: 240px;
+  max-width: calc(100vw - 32px);
   background: #10181f;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -283,6 +370,37 @@ button {
   fill: color-mix(in srgb, var(--c-violet) 25%, transparent);
 }
 
+/* Stroke only (open line, no fill) -- kept separate from the fills below because a
+   closed d3.area() shape strokes its vertical closing edges too, which would put a false
+   colored seam at every band boundary. */
+.psd-trace--neutral {
+  stroke: var(--text-dim);
+  color: var(--text-dim);
+}
+
+.psd-trace--lf {
+  stroke: var(--c-amber);
+  color: var(--c-amber);
+}
+
+.psd-trace--hf {
+  stroke: var(--c-teal);
+  color: var(--c-teal);
+}
+
+/* Fill only (closed area, no stroke) -- the colored region under the curve. */
+.psd-fill--neutral {
+  fill: color-mix(in srgb, var(--text-dim) 15%, transparent);
+}
+
+.psd-fill--lf {
+  fill: color-mix(in srgb, var(--c-amber) 25%, transparent);
+}
+
+.psd-fill--hf {
+  fill: color-mix(in srgb, var(--c-teal) 25%, transparent);
+}
+
 .gridline {
   stroke: var(--border);
   stroke-width: 1;
@@ -324,7 +442,7 @@ button {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 24px;
+  gap: var(--space-5);
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -335,7 +453,7 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-1);
   flex: 1;
   min-width: 0;
 }
@@ -379,7 +497,7 @@ input[type='range']::-webkit-slider-thumb {
   height: 30px;
   margin-top: -11px;
   border-radius: 999px;
-  background: #fff;
+  background: var(--thumb);
   border: 3px solid var(--c-teal);
   box-shadow: 0 0 10px rgba(47, 231, 201, 0.6);
 }
@@ -388,7 +506,7 @@ input[type='range']::-webkit-slider-thumb {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .control__preset-label {
