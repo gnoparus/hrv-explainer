@@ -1,0 +1,179 @@
+/* Shared stylesheet for all lessons and reference docs in this workspace. */
+
+:root {
+  --ink: #1b1b1b;
+  --ink-dim: #5a5a5a;
+  --paper: #fbfaf7;
+  --panel: #f1efe9;
+  --rule: #d8d4c8;
+  --accent: #b23a2f;
+  --accent-soft: #f4e3df;
+  --link: #2f5f8a;
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", "Menlo", "Consolas", monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  max-width: 42em;
+  padding: 3rem 1.5rem 5rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.55;
+}
+
+h1, h2, h3 {
+  font-family: var(--sans);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 1.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-family: var(--sans);
+  color: var(--ink-dim);
+  font-size: 1rem;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin-top: 2.5rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.3rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin-top: 1.5rem;
+}
+
+p, li { max-width: 38em; }
+
+a { color: var(--link); }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  background: var(--panel);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* Contested-claim callout: use for statements that look authoritative but
+   are known to be disputed in the literature. */
+.contested {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.9rem 1.1rem;
+  margin: 1.5rem 0;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+}
+
+.contested strong {
+  display: block;
+  font-family: var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+/* Numbered footnote-style citations */
+.citations {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+}
+
+.citations ol { padding-left: 1.3rem; }
+.citations li { margin-bottom: 0.5rem; }
+
+/* Retrieval-practice quiz block */
+.quiz {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.2rem 1.4rem;
+  margin: 1.8rem 0;
+  font-family: var(--sans);
+}
+
+.quiz h3 { margin-top: 0; }
+
+.quiz-item { margin-bottom: 1.4rem; }
+.quiz-item:last-child { margin-bottom: 0; }
+
+.quiz-item p.q { font-weight: 600; margin-bottom: 0.5rem; }
+
+.quiz-item input[type="text"] {
+  width: 100%;
+  max-width: 22em;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--paper);
+}
+
+.quiz-item button {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--ink-dim);
+  border-radius: 4px;
+  background: var(--paper);
+  cursor: pointer;
+}
+
+.quiz-item .feedback {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+.feedback.correct { color: #2a7a3b; }
+.feedback.incorrect { color: var(--accent); }
+
+.nav {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rule);
+}
+
+.ask-agent {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  margin-top: 2.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #eae7de;
+    --ink-dim: #a7a297;
+    --paper: #1b1a17;
+    --panel: #262420;
+    --rule: #3c3934;
+    --accent: #e8836f;
+    --accent-soft: #3a2622;
+    --link: #7fb2e0;
+  }
+}

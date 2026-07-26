@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HRV Spectral Bands — Quick Reference</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+
+<h1>HRV Spectral Bands</h1>
+<p class="subtitle">Quick reference · band definitions and interpretation caveats</p>
+
+<p>Frequency bands per the 1996 Task Force standard.<sup><a href="#cite2">2</a></sup>
+Ranges are fixed by convention, not by a physiological boundary — treat the
+edges as agreed cutoffs, not hard biological transitions.</p>
+
+<table style="width:100%; border-collapse: collapse; font-family: var(--sans); font-size: 0.9rem;">
+<thead>
+<tr style="border-bottom: 2px solid var(--rule); text-align: left;">
+<th style="padding: 0.5rem 0.6rem 0.5rem 0;">Band</th>
+<th style="padding: 0.5rem 0.6rem;">Range</th>
+<th style="padding: 0.5rem 0.6rem;">Min. recording</th>
+<th style="padding: 0.5rem 0.6rem;">Often claimed to reflect</th>
+<th style="padding: 0.5rem 0;">Why to be careful</th>
+</tr>
+</thead>
+<tbody style="vertical-align: top;">
+<tr style="border-bottom: 1px solid var(--rule);">
+<td style="padding: 0.6rem 0.6rem 0.6rem 0;"><strong>HF</strong></td>
+<td style="padding: 0.6rem;">0.15–0.4 Hz</td>
+<td style="padding: 0.6rem;">~1–2 min</td>
+<td style="padding: 0.6rem;">Vagal (parasympathetic) tone, via respiratory sinus arrhythmia</td>
+<td style="padding: 0.6rem;">Amplitude is respiration-rate dependent, not a flat vagal gauge — see the resonance-curve argument in this repo's <code>README.md</code>.</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--rule);">
+<td style="padding: 0.6rem 0.6rem 0.6rem 0;"><strong>LF</strong></td>
+<td style="padding: 0.6rem;">0.04–0.15 Hz</td>
+<td style="padding: 0.6rem;">~2 min</td>
+<td style="padding: 0.6rem;">Sympathetic tone (historically) or baroreflex activity</td>
+<td style="padding: 0.6rem;">Mixed origin — ~50% parasympathetic, ~25% sympathetic contribution per Billman.<sup><a href="#cite1">1</a></sup> Not a clean sympathetic marker.</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--rule);">
+<td style="padding: 0.6rem 0.6rem 0.6rem 0;"><strong>LF/HF</strong></td>
+<td style="padding: 0.6rem;">ratio</td>
+<td style="padding: 0.6rem;">—</td>
+<td style="padding: 0.6rem;">"Sympatho-vagal balance"</td>
+<td style="padding: 0.6rem;"><strong>Disproven as a balance index.</strong><sup><a href="#cite1">1</a></sup> Pharmacological blockade studies produce LF/HF shifts opposite to the true autonomic state.</td>
+</tr>
+<tr style="border-bottom: 1px solid var(--rule);">
+<td style="padding: 0.6rem 0.6rem 0.6rem 0;"><strong>VLF</strong></td>
+<td style="padding: 0.6rem;">0.0033–0.04 Hz</td>
+<td style="padding: 0.6rem;">≥5 min (better: 24 h)</td>
+<td style="padding: 0.6rem;">Thermoregulation, renin-angiotensin system, intrinsic cardiac nervous system</td>
+<td style="padding: 0.6rem;">Mechanisms still genuinely uncertain per Shaffer &amp; Ginsberg<sup><a href="#cite3">3</a></sup> — don't over-claim, even with a valid recording length.</td>
+</tr>
+<tr>
+<td style="padding: 0.6rem 0.6rem 0.6rem 0;"><strong>ULF</strong></td>
+<td style="padding: 0.6rem;">≤0.0033 Hz</td>
+<td style="padding: 0.6rem;">24 h</td>
+<td style="padding: 0.6rem;">Circadian rhythm, core temperature, metabolism</td>
+<td style="padding: 0.6rem;">Meaningless outside a 24&nbsp;h recording — a short-term simulator like this app's cannot show real ULF at all.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="contested">
+<strong>In this app</strong>
+<code>src/sim/psd.ts</code> integrates the actual PSD over each band rather
+than attributing "the breathing oscillator" to HF by assumption — see
+<code>README.md</code>, "Physiology model." This is why dragging breathing
+rate to 6/min visibly moves power from HF into LF while RMSSD rises: a live
+demonstration that LF is not a clean stand-in for sympathetic tone.
+</div>
+
+<h2 id="citations">Citations</h2>
+<div class="citations">
+<ol>
+<li id="cite1">Billman, G.E. (2013) "The LF/HF ratio does not accurately measure cardiac sympatho-vagal balance." <em>Frontiers in Physiology</em>, 4:26. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3576706/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC3576706</a></li>
+<li id="cite2">Task Force of the ESC/NASPE (1996) "Heart rate variability: Standards of measurement, physiological interpretation, and clinical use." <em>Circulation</em>, 93:1043–1065. <a href="https://doi.org/10.1161/01.CIR.93.5.1043" target="_blank" rel="noopener">doi.org/10.1161/01.CIR.93.5.1043</a></li>
+<li id="cite3">Shaffer, F. &amp; Ginsberg, J.P. (2017) "An Overview of Heart Rate Variability Metrics and Norms." <em>Frontiers in Public Health</em>, 5:258. <a href="https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2017.00258/full" target="_blank" rel="noopener">frontiersin.org</a></li>
+</ol>
+</div>
+
+<p class="nav"><a href="0001-spectral-hrv-pitfalls.html">← Back to lesson: Spectral HRV Pitfalls</a></p>
+
+</body>
+</html>
