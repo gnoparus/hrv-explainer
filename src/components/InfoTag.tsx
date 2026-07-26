@@ -13,15 +13,37 @@ export function InfoTag({ text }: { text: string }) {
 
   useEffect(() => {
     if (!open) return
+
+    // Clamp against both viewport edges (not a binary left/right flip) -- a tag near the
+    // left edge can overflow left just as easily as one near the right edge overflows
+    // right once the popover is that wide.
+    function recomputeOffset() {
+      if (!ref.current) return
+      const rect = ref.current.getBoundingClientRect()
+      // CSS shrinks the popover below POPOVER_WIDTH via max-width once the viewport is
+      // narrower than POPOVER_WIDTH + 2*VIEWPORT_MARGIN -- clamp against its actual
+      // rendered width, not the nominal one, or this over-shifts on narrow viewports and
+      // clips a popover that would otherwise fit.
+      const renderedWidth = Math.min(POPOVER_WIDTH, window.innerWidth - 2 * VIEWPORT_MARGIN)
+      const minOffset = VIEWPORT_MARGIN - rect.left
+      const maxOffset = window.innerWidth - VIEWPORT_MARGIN - renderedWidth - rect.left
+      setPopoverLeft(Math.min(Math.max(0, minOffset), maxOffset))
+    }
+
     function onPointerDown(e: PointerEvent) {
       if (!ref.current?.contains(e.target as Node)) setOpen(false)
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
     }
+    recomputeOffset()
+    // Rotating or resizing the actual demo device (iPad) while a popover is open must not
+    // leave it clamped against a viewport size that no longer exists.
+    window.addEventListener('resize', recomputeOffset)
     document.addEventListener('pointerdown', onPointerDown)
     document.addEventListener('keydown', onKeyDown)
     return () => {
+      window.removeEventListener('resize', recomputeOffset)
       document.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
@@ -34,23 +56,7 @@ export function InfoTag({ text }: { text: string }) {
         className="info-tag__btn"
         aria-label="What is this metric?"
         aria-expanded={open}
-        onClick={() => {
-          if (!open && ref.current) {
-            // Clamp against both viewport edges (not a binary left/right flip) -- a tag
-            // near the left edge can overflow left just as easily as one near the right
-            // edge overflows right once the popover is that wide.
-            const rect = ref.current.getBoundingClientRect()
-            // CSS shrinks the popover below POPOVER_WIDTH via max-width once the viewport
-            // is narrower than POPOVER_WIDTH + 2*VIEWPORT_MARGIN -- clamp against its
-            // actual rendered width, not the nominal one, or this over-shifts on narrow
-            // viewports and clips a popover that would otherwise fit.
-            const renderedWidth = Math.min(POPOVER_WIDTH, window.innerWidth - 2 * VIEWPORT_MARGIN)
-            const minOffset = VIEWPORT_MARGIN - rect.left
-            const maxOffset = window.innerWidth - VIEWPORT_MARGIN - renderedWidth - rect.left
-            setPopoverLeft(Math.min(Math.max(0, minOffset), maxOffset))
-          }
-          setOpen((o) => !o)
-        }}
+        onClick={() => setOpen((o) => !o)}
       >
         i
       </button>

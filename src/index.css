@@ -370,21 +370,34 @@ input[type='range']:focus-visible::-moz-range-thumb {
   fill: color-mix(in srgb, var(--c-violet) 25%, transparent);
 }
 
+/* Stroke only (open line, no fill) -- kept separate from the fills below because a
+   closed d3.area() shape strokes its vertical closing edges too, which would put a false
+   colored seam at every band boundary. */
 .psd-trace--neutral {
   stroke: var(--text-dim);
   color: var(--text-dim);
-  fill: color-mix(in srgb, var(--text-dim) 15%, transparent);
 }
 
 .psd-trace--lf {
   stroke: var(--c-amber);
   color: var(--c-amber);
-  fill: color-mix(in srgb, var(--c-amber) 25%, transparent);
 }
 
 .psd-trace--hf {
   stroke: var(--c-teal);
   color: var(--c-teal);
+}
+
+/* Fill only (closed area, no stroke) -- the colored region under the curve. */
+.psd-fill--neutral {
+  fill: color-mix(in srgb, var(--text-dim) 15%, transparent);
+}
+
+.psd-fill--lf {
+  fill: color-mix(in srgb, var(--c-amber) 25%, transparent);
+}
+
+.psd-fill--hf {
   fill: color-mix(in srgb, var(--c-teal) 25%, transparent);
 }
 
