@@ -485,6 +485,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .info-tag__btn {
+  position: relative;
   width: 20px;
   height: 20px;
   border-radius: 999px;
@@ -498,6 +499,16 @@ input[type='range']:focus-visible::-moz-range-thumb {
   align-items: center;
   justify-content: center;
   min-width: 20px;
+}
+
+/* Keeps the documented 20px visual size (DESIGN.md's Info Tag spec) while meeting the
+   44px touch-target minimum -- an invisible hit-area, not a bigger circle. Safe at both
+   call sites (metric-tile head, PSD panel title): neither has another interactive
+   element close enough to overlap the expanded 44px zone. */
+.info-tag__btn::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
 }
 
 .info-tag__popover {
