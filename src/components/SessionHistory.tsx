@@ -56,10 +56,11 @@ function SparklineGrid({ sessions }: { sessions: Session[] }) {
   return (
     <div className="sparkline-grid">
       <div className="panel__note sparkline-grid__note">
-        These points move with the breathing-rate/vagal-tone sliders, not elapsed time -- in real
-        repeated measurements, HRV is known to decline with age at the population level (Choi et al.
-        2020); a rising RMSSD trend has been proposed as a favorable sign, not demonstrated as a
-        biological-age readout (Russoniello et al. 2013).
+        These points move with the breathing-rate/vagal-tone sliders, not elapsed time -- HRV is
+        known to decline with age at the population level (Choi et al. 2020), and paced-breathing
+        HRV has been proposed as a marker of biological, not just chronological, age (Russoniello
+        et al. 2013). No study has tested whether a rising trend across your own repeated sessions
+        tracks that -- treat these as a trend worth watching, not a biological-age readout.
       </div>
       {SPARK_METRICS.map((metric) => (
         <Sparkline key={metric.key} sessions={sessions} metric={metric} />
