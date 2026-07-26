@@ -357,23 +357,6 @@ input[type='range']:focus-visible::-moz-range-thumb {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 8px 16px;
-  animation: glowBreathe 2.4s ease-in-out infinite;
-}
-
-@keyframes glowBreathe {
-  0%,
-  100% {
-    box-shadow: 0 0 10px -2px color-mix(in srgb, var(--tile-color) 40%, transparent);
-  }
-  50% {
-    box-shadow: 0 0 16px -2px color-mix(in srgb, var(--tile-color) 70%, transparent);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .metric-tile {
-    animation: none;
-  }
 }
 
 .metric-tile__head {
@@ -393,6 +376,30 @@ input[type='range']:focus-visible::-moz-range-thumb {
   font-variant-numeric: tabular-nums;
   color: var(--tile-color);
   text-shadow: 0 0 6px color-mix(in srgb, var(--tile-color) 35%, transparent);
+}
+
+/* Pulses the value's own glow, not the tile chrome -- DESIGN.md reserves signal glow for
+   drop-shadow/text-shadow on live data (§4 Elevation), never a box-shadow on panel chrome.
+   Only applied while actively live-updating (not for a fixed uploaded recording, not while
+   warming/blank) via the --live modifier below. */
+.metric-tile__value--live {
+  animation: glowBreathe 2.4s ease-in-out infinite;
+}
+
+@keyframes glowBreathe {
+  0%,
+  100% {
+    text-shadow: 0 0 6px color-mix(in srgb, var(--tile-color) 40%, transparent);
+  }
+  50% {
+    text-shadow: 0 0 6px color-mix(in srgb, var(--tile-color) 70%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .metric-tile__value--live {
+    animation: none;
+  }
 }
 
 .metric-tile__unit {
@@ -897,6 +904,19 @@ input[type='range']::-webkit-slider-thumb {
 
   .chart-row {
     min-height: 180px;
+  }
+
+  /* min-height above bounds the row, but .panel__svg--square/--wide size themselves from
+     aspect-ratio + the grid column's WIDTH (flex: none), not the row's height -- on a wide/short
+     viewport a ~440px-wide column still wants a ~440px-tall square chart, silently overriding
+     the row's height budget. Cap the SVGs' own intrinsic size directly instead. */
+  .chart-row .panel__svg--square,
+  .chart-row .panel__svg--wide {
+    max-height: 180px;
+  }
+
+  .chart-row .panel__svg--square {
+    width: auto;
   }
 
   .metric-tile {

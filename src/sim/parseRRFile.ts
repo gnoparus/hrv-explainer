@@ -10,6 +10,13 @@ function median(values: number[]): number {
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
 }
 
+// Real RR intervals are always in this range (20-200bpm). Applied AFTER unit conversion, so a
+// stray already-ms value in an otherwise-seconds file (e.g. a leftover "800" among "0.80"s)
+// gets caught here instead of becoming 800000ms and dominating recording duration, RMSSD/SDNN,
+// and every chart's scale.
+const RR_MIN_MS = 300
+const RR_MAX_MS = 2000
+
 // ponytail: supports the common single-value-per-line RR export (Kubios plain .txt, Polar RR
 // recordings) -- takes the LAST numeric token on each line so an optional leading index/timestamp
 // column doesn't get mistaken for the RR value. A trailing annotation/quality-flag column (rare
@@ -34,11 +41,19 @@ export function parseRRText(text: string, fileName: string): ParsedRR {
     throw new Error('No usable RR-interval values found in this file.')
   }
 
-  // Real RR intervals are always in the 300-2000ms range. Use the median rather than requiring
-  // every value to agree -- one stray bad line or unit typo shouldn't flip the interpretation
-  // of the entire file the way `.every()` did.
+  // Use the median rather than requiring every value to agree -- one stray bad line or unit
+  // typo shouldn't flip the interpretation of the entire file the way `.every()` did.
   const looksLikeSeconds = median(rrMsValues) < 10
-  const rr = looksLikeSeconds ? rrMsValues.map((v) => v * 1000) : rrMsValues
+  const converted = looksLikeSeconds ? rrMsValues.map((v) => v * 1000) : rrMsValues
+
+  const rr: number[] = []
+  for (const v of converted) {
+    if (v >= RR_MIN_MS && v <= RR_MAX_MS) rr.push(v)
+    else skippedLines += 1
+  }
+  if (rr.length < 2) {
+    throw new Error('No usable RR-interval values found in this file.')
+  }
 
   let t = 0
   const points = rr.map((rrMs) => {
