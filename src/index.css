@@ -267,6 +267,19 @@ input[type='range']:focus-visible::-moz-range-thumb {
   gap: var(--space-2);
 }
 
+.metrics-strip__pair-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.metrics-strip__pair-group-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
 .metrics-strip__caption {
   text-align: right;
   font-size: 11px;
@@ -493,6 +506,9 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .panel__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -565,6 +581,16 @@ input[type='range']:focus-visible::-moz-range-thumb {
   color: var(--c-teal);
 }
 
+/* Burg/AR trace modifier -- applied alongside psd-trace--lf/hf/neutral, so it must come after
+   them here (equal-specificity classes cascade by source order in the stylesheet, not by
+   className list order in the JSX). Differentiates the fourth "signal" via dash pattern rather
+   than a new hue, per the Three-Signal Rule -- AR-LF stays amber, AR-HF stays teal, just dashed. */
+.psd-trace--ar {
+  stroke-dasharray: 6 4;
+  stroke-width: 1.75;
+  opacity: 0.8;
+}
+
 /* Fill only (closed area, no stroke) -- the colored region under the curve. */
 .psd-fill--neutral {
   fill: color-mix(in srgb, var(--text-dim) 15%, transparent);
@@ -599,12 +625,25 @@ input[type='range']:focus-visible::-moz-range-thumb {
   fill: var(--text-dim);
   font-size: 11px;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--bg-panel);
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 .axis-tick {
   fill: var(--text-dim);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
+}
+
+.psd-legend__swatch {
+  stroke: var(--text-dim);
+  stroke-width: 1.75;
+}
+
+.psd-legend__swatch--ar {
+  stroke-dasharray: 6 4;
 }
 
 .dot {
@@ -740,6 +779,42 @@ input[type='range']::-webkit-slider-thumb {
   background: var(--thumb);
   border: 3px solid var(--c-teal);
   box-shadow: 0 0 10px rgba(47, 231, 201, 0.6);
+}
+
+.control__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.control__row input[type='range'] {
+  flex: 1;
+  min-width: 0;
+}
+
+.control__number {
+  width: 64px;
+  flex: none;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.control__number::-webkit-inner-spin-button,
+.control__number::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.control__number:focus-visible {
+  outline: 2px solid var(--c-teal);
+  outline-offset: 1px;
 }
 
 .control--presets {
