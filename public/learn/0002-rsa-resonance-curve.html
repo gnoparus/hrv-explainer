@@ -66,7 +66,7 @@ vagal tone. The widget below is that exact curve.
 <svg id="chart" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet"></svg>
 <div class="legend">
   <span><span class="swatch" style="background:#2fe7c9"></span>This app's resonance model</span>
-  <span><span class="swatch" style="background:#b23a2f"></span>Naive constant-amplitude model</span>
+  <span><span class="swatch" style="background:#b18bff"></span>Naive constant-amplitude model</span>
 </div>
 <div class="readout">
   <div><strong>A_HF at this rate</strong><span id="ro-amp">—</span></div>
@@ -188,7 +188,7 @@ function buildChart() {
   var axisX = document.createElementNS(svgns, 'line');
   axisX.setAttribute('x1', PAD_L); axisX.setAttribute('x2', W - PAD_R);
   axisX.setAttribute('y1', H - PAD_B); axisX.setAttribute('y2', H - PAD_B);
-  axisX.setAttribute('stroke', '#d8d4c8');
+  axisX.setAttribute('stroke', '#1b2733');
   svg.appendChild(axisX);
 
   [4, 6, 10, 15, 20, 24].forEach(function (brpm) {
@@ -209,7 +209,7 @@ function buildChart() {
   var naivePath = document.createElementNS(svgns, 'path');
   naivePath.setAttribute('d', pathFor(naivePoints));
   naivePath.setAttribute('fill', 'none');
-  naivePath.setAttribute('stroke', '#b23a2f');
+  naivePath.setAttribute('stroke', '#b18bff');
   naivePath.setAttribute('stroke-width', '2');
   naivePath.setAttribute('stroke-dasharray', '5,4');
   svg.appendChild(naivePath);
@@ -220,7 +220,7 @@ function buildChart() {
   svg.appendChild(markerRes);
 
   var markerNaive = document.createElementNS(svgns, 'circle');
-  markerNaive.setAttribute('r', '4'); markerNaive.setAttribute('fill', '#b23a2f');
+  markerNaive.setAttribute('r', '4'); markerNaive.setAttribute('fill', '#b18bff');
   markerNaive.setAttribute('id', 'marker-naive');
   svg.appendChild(markerNaive);
 

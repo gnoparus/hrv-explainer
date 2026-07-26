@@ -1,19 +1,31 @@
-/* Shared stylesheet for all lessons and reference docs in this workspace. */
+/* Shared stylesheet for all lessons and reference docs in this workspace.
+   Tokens mirror the main app's DESIGN.md system (void/panel/hairline,
+   teal/violet/amber signal colors, single system sans) so this reading
+   surface reads as the same instrument, not a separate paper handout. */
 
 :root {
-  --ink: #1b1b1b;
-  --ink-dim: #5a5a5a;
-  --paper: #fbfaf7;
-  --panel: #f1efe9;
-  --rule: #d8d4c8;
-  --accent: #b23a2f;
-  --accent-soft: #f4e3df;
-  --link: #2f5f8a;
-  --good: #1f7a3d;
-  --teal: #0e9a86;
-  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
-  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --ink: #d7e2ea;
+  --ink-dim: #7c8fa0;
+  --paper: #05080b;
+  --panel: #0b1117;
+  --panel-raised: #0e161d;
+  /* Slightly brighter than the app's own --border/hairline (#1b2733) -- the app only ever
+     draws hairlines between two panel surfaces, never straight onto --void. This stylesheet
+     draws structural dividers (h2 underlines, table rows, .nav) directly on the page body,
+     which is --paper/void here, so the same hex would be nearly invisible on this surface. */
+  --rule: #293a4a;
+  --accent: #ffc857;
+  --error: #ff6b6b;
+  --link: #b18bff;
+  --good: #2fe7c9;
+  --teal: #2fe7c9;
+  --sans: -apple-system, "SF Pro Text", "Segoe UI", Roboto, system-ui, sans-serif;
   --mono: "SF Mono", "Menlo", "Consolas", monospace;
+
+  /* Without this, native controls (range sliders, in particular) keep rendering their
+     light-mode UA styling -- a white-filled slider track was the brightest thing on the
+     page after the token flip to a dark background. Matches src/index.css. */
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -24,7 +36,7 @@ body {
   padding: 3rem 1.5rem 5rem;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: 19px;
   line-height: 1.55;
 }
@@ -67,16 +79,20 @@ a { color: var(--link); }
 code {
   font-family: var(--mono);
   font-size: 0.85em;
-  background: var(--panel);
+  background: var(--panel-raised);
   padding: 0.1em 0.35em;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 /* Contested-claim callout: use for statements that look authoritative but
-   are known to be disputed in the literature. */
+   are known to be disputed in the literature. Full border + background tint,
+   not a side-stripe -- border-left accents are an anti-pattern regardless of
+   register (see the parent skill's absolute-ban list). Amber matches
+   DESIGN.md's own "interpret with caution" role for the contested metric. */
 .contested {
-  border-left: 3px solid var(--accent);
-  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel));
+  border-radius: 10px;
   padding: 0.9rem 1.1rem;
   margin: 1.5rem 0;
   font-family: var(--sans);
@@ -87,7 +103,7 @@ code {
   display: block;
   font-family: var(--sans);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   font-size: 0.75rem;
   color: var(--accent);
   margin-bottom: 0.4rem;
@@ -105,9 +121,9 @@ code {
 
 /* Retrieval-practice quiz block */
 .quiz {
-  background: var(--panel);
+  background: var(--panel-raised);
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: 14px;
   padding: 1.2rem 1.4rem;
   margin: 1.8rem 0;
   font-family: var(--sans);
@@ -126,19 +142,24 @@ code {
   font-family: var(--mono);
   font-size: 0.9rem;
   padding: 0.4rem 0.6rem;
+  min-height: 44px;
   border: 1px solid var(--rule);
-  border-radius: 4px;
-  background: var(--paper);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--ink);
 }
 
 .quiz-item button {
   font-family: var(--sans);
   font-size: 0.85rem;
+  font-weight: 500;
   margin-left: 0.5rem;
   padding: 0.4rem 0.8rem;
-  border: 1px solid var(--ink-dim);
-  border-radius: 4px;
-  background: var(--paper);
+  min-height: 44px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--panel-raised);
+  color: var(--ink-dim);
   cursor: pointer;
 }
 
@@ -150,14 +171,14 @@ code {
 }
 
 .feedback.correct { color: var(--good); }
-.feedback.incorrect { color: var(--accent); }
+.feedback.incorrect { color: var(--error); }
 
 /* Interactive slider widget: shared by any lesson with a live-manipulable
    demo (drag a parameter, watch a derived quantity respond). */
 .widget {
-  background: var(--panel);
+  background: var(--panel-raised);
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: 14px;
   padding: 1.2rem 1.4rem 1.4rem;
   margin: 1.6rem 0;
   font-family: var(--sans);
@@ -171,7 +192,7 @@ code {
   display: block;
   background: var(--paper);
   border: 1px solid var(--rule);
-  border-radius: 4px;
+  border-radius: 10px;
 }
 
 .widget .caption {
@@ -189,11 +210,41 @@ code {
 
 .slider-row input[type="range"] { flex: 1; }
 
+/* Matches src/index.css's range-input styling exactly -- color-scheme:dark alone still
+   leaves the native thumb/track in the OS accent color (blue), the brightest thing on a
+   dark page. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  margin: 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal), var(--link));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -11px;
+  border-radius: 999px;
+  background: #fff;
+  border: 3px solid var(--teal);
+  box-shadow: 0 0 10px rgba(47, 231, 201, 0.6);
+}
+
 .slider-row output {
   font-family: var(--mono);
   font-size: 0.95rem;
   min-width: 6.5em;
   text-align: right;
+  color: var(--ink);
 }
 
 .readout {
@@ -229,7 +280,7 @@ code {
 
 .direction { font-weight: 700; }
 .direction.up { color: var(--good); }
-.direction.down { color: var(--accent); }
+.direction.down { color: var(--error); }
 
 /* Frequency-axis strip: a horizontal band diagram with a moving marker,
    used to show where a peak sits relative to labeled ranges (e.g. LF/HF). */
@@ -245,7 +296,7 @@ code {
   left: 0;
   right: 0;
   height: 18px;
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   display: flex;
 }
@@ -255,10 +306,16 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.68rem;
+  overflow: hidden;
+  padding: 0 4px;
+  font-size: 0.8125rem;
   font-family: var(--sans);
   font-weight: 700;
   letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* Dark text on the bright signal-color chip -- --paper is near-black in
+     this dark token set, giving strong contrast against amber/teal fills. */
   color: var(--paper);
 }
 
@@ -267,7 +324,8 @@ code {
   top: 4px;
   width: 2px;
   height: 38px;
-  background: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--ink);
   transform: translateX(-1px);
 }
 
@@ -280,6 +338,7 @@ code {
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid var(--ink);
+  filter: drop-shadow(0 0 1px var(--paper));
 }
 
 .nav {
@@ -295,17 +354,4 @@ code {
   font-size: 0.85rem;
   color: var(--ink-dim);
   margin-top: 2.5rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #eae7de;
-    --ink-dim: #a7a297;
-    --paper: #1b1a17;
-    --panel: #262420;
-    --rule: #3c3934;
-    --accent: #e8836f;
-    --accent-soft: #3a2622;
-    --link: #7fb2e0;
-  }
 }

@@ -22,14 +22,22 @@ export function Controls({
 }: ControlsProps) {
   const [breathingFocused, setBreathingFocused] = useState(false)
   const [breathingInput, setBreathingInput] = useState(breathingRateBrpm.toFixed(1))
+  const [breathingClamped, setBreathingClamped] = useState(false)
   useEffect(() => {
-    if (!breathingFocused) setBreathingInput(breathingRateBrpm.toFixed(1))
+    if (!breathingFocused) {
+      setBreathingInput(breathingRateBrpm.toFixed(1))
+      setBreathingClamped(false)
+    }
   }, [breathingRateBrpm, breathingFocused])
 
   const [vagalFocused, setVagalFocused] = useState(false)
   const [vagalInput, setVagalInput] = useState(String(Math.round(vagalTone * 100)))
+  const [vagalClamped, setVagalClamped] = useState(false)
   useEffect(() => {
-    if (!vagalFocused) setVagalInput(String(Math.round(vagalTone * 100)))
+    if (!vagalFocused) {
+      setVagalInput(String(Math.round(vagalTone * 100)))
+      setVagalClamped(false)
+    }
   }, [vagalTone, vagalFocused])
 
   return (
@@ -54,7 +62,7 @@ export function Controls({
             onChange={(e) => onBreathingRateChange(Number(e.target.value))}
           />
           <input
-            className="control__number"
+            className={`control__number${breathingClamped ? ' control__number--clamped' : ''}`}
             type="number"
             inputMode="decimal"
             aria-label="Breathing rate, breaths per minute"
@@ -69,6 +77,7 @@ export function Controls({
               setBreathingInput(raw)
               const parsed = Number(raw)
               if (raw !== '' && !Number.isNaN(parsed)) {
+                setBreathingClamped(parsed < 6 || parsed > 24)
                 onBreathingRateChange(clamp(parsed, 6, 24))
               }
             }}
@@ -92,7 +101,7 @@ export function Controls({
             onChange={(e) => onVagalToneChange(Number(e.target.value))}
           />
           <input
-            className="control__number"
+            className={`control__number${vagalClamped ? ' control__number--clamped' : ''}`}
             type="number"
             inputMode="numeric"
             aria-label="Vagal tone, percent"
@@ -107,6 +116,7 @@ export function Controls({
               setVagalInput(raw)
               const parsed = Number(raw)
               if (raw !== '' && !Number.isNaN(parsed)) {
+                setVagalClamped(parsed < 10 || parsed > 100)
                 onVagalToneChange(clamp(parsed, 10, 100) / 100)
               }
             }}

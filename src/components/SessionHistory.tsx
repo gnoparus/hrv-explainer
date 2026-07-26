@@ -144,7 +144,11 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
               <button
                 type="button"
                 className="session-list__delete"
-                onClick={() => onDelete(s.id)}
+                onClick={() => {
+                  if (window.confirm(`Delete session from ${new Date(s.timestamp).toLocaleString()}? This can't be undone.`)) {
+                    onDelete(s.id)
+                  }
+                }}
                 aria-label={`Delete session from ${new Date(s.timestamp).toLocaleString()}`}
               >
                 ✕
