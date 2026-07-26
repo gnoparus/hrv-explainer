@@ -103,9 +103,67 @@ input[type='range']:focus-visible::-moz-range-thumb {
   gap: var(--space-2);
 }
 
+.tabbar {
+  display: flex;
+  gap: var(--space-2);
+  flex: none;
+}
+
+.tabbar__tab {
+  min-height: 36px;
+  padding: 6px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tabbar__tab[aria-selected='true'] {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
+}
+
+.app__tabpanel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: var(--space-5);
+}
+
+/* Explicit override: author-origin `display:flex` above beats the UA stylesheet's
+   `[hidden] { display: none }` at equal specificity, so [hidden] alone does nothing here. */
+.app__tabpanel[hidden] {
+  display: none;
+}
+
+.app__tabpanel--history {
+  overflow-y: auto;
+  padding-top: var(--space-2);
+}
+
 .app__header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.save-session-btn {
+  min-height: 36px;
+  padding: 6px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.save-session-btn:active {
+  border-color: var(--c-teal);
+  color: var(--c-teal);
 }
 
 .app__title {

@@ -45,9 +45,11 @@ traces should visibly respond to input, not just update.
   demonstrated by dragging a slider, not explained in a paragraph next to it.
 - Instrument-grade legibility over decoration — every glow/pulse effect
   earns its place by reinforcing "this is live," never purely ornamental.
-- One screen, no navigation — the whole argument fits in view during a
-  live demo; nothing should require scrolling or clicking through screens
-  mid-presentation.
+- One screen, no navigation for the live demo — the whole argument fits in
+  view during a live demo; nothing should require scrolling or clicking
+  through screens mid-presentation. A Live/History tab bar is the one
+  accepted exception, for the secondary self-learner audience reviewing
+  saved sessions afterward — it's opt-in and never required mid-demo.
 - Numbers you can trust at a glance — tabular-nums, stable layout, no
   jitter that would undercut credibility in front of a thesis committee.
 
