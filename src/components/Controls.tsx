@@ -1,8 +1,12 @@
+import { BreathingPacer } from './BreathingPacer'
+
 interface ControlsProps {
   breathingRateBrpm: number
   vagalTone: number
   onBreathingRateChange: (v: number) => void
   onVagalToneChange: (v: number) => void
+  showPacer: boolean
+  onTogglePacer: () => void
 }
 
 export function Controls({
@@ -10,13 +14,20 @@ export function Controls({
   vagalTone,
   onBreathingRateChange,
   onVagalToneChange,
+  showPacer,
+  onTogglePacer,
 }: ControlsProps) {
   return (
     <div className="controls">
       <div className="control">
-        <label htmlFor="breathing-rate">
-          Breathing rate <strong>{breathingRateBrpm.toFixed(1)}</strong> breaths/min
-        </label>
+        <div className="control__breathing-head">
+          <label htmlFor="breathing-rate">
+            Breathing rate <strong>{breathingRateBrpm.toFixed(1)}</strong> breaths/min
+          </label>
+          <button type="button" className="pacer-toggle" aria-pressed={showPacer} onClick={onTogglePacer}>
+            Pacer
+          </button>
+        </div>
         <input
           id="breathing-rate"
           type="range"
@@ -26,6 +37,7 @@ export function Controls({
           value={breathingRateBrpm}
           onChange={(e) => onBreathingRateChange(Number(e.target.value))}
         />
+        {showPacer && <BreathingPacer breathingRateBrpm={breathingRateBrpm} />}
       </div>
 
       <div className="control">

@@ -14,6 +14,7 @@ function App() {
   const [breathingRateBrpm, setBreathingRateBrpm] = useState(initialPreset?.breathingRateBrpm ?? 12)
   const [vagalTone, setVagalTone] = useState(initialPreset?.vagalTone ?? 0.6)
   const [metricsWindow, setMetricsWindow] = useState<'live' | 'clinical'>('live')
+  const [showPacer, setShowPacer] = useState(false)
   const snapshot = useHrvSimulation({ breathingRateBrpm, vagalTone })
   const active = metricsWindow === 'clinical' ? snapshot.clinical : snapshot.live
 
@@ -54,6 +55,8 @@ function App() {
           vagalTone={vagalTone}
           onBreathingRateChange={setBreathingRateBrpm}
           onVagalToneChange={setVagalTone}
+          showPacer={showPacer}
+          onTogglePacer={() => setShowPacer((v) => !v)}
         />
       </div>
     </div>
