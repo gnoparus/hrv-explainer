@@ -147,7 +147,7 @@ export function MetricsStrip({
           colorVar="--c-teal"
           warming={warming}
           live={live}
-          info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome, well-validated in cardiology and oncology (Martinez et al. 2024). HRV declines with chronological age (Choi et al. 2020), and paced-breathing HRV has been proposed as a marker of biological, not just chronological, age (Russoniello et al. 2013) -- a trend worth watching across sessions, not a fixed trajectory."
+          info="Root mean square of successive RR differences -- the primary short-term vagal-tone outcome. HRV declines with chronological age (Choi et al. 2020), and paced-breathing HRV has been proposed as a marker of biological, not just chronological, age (Russoniello et al. 2013) -- a trend worth watching across sessions, not a fixed trajectory."
         />
         <div className="metrics-strip__pair-group">
           <div className="metrics-strip__pair-group-head">
