@@ -56,6 +56,43 @@ rate down to 6/min drains HF power into LF while RMSSD simultaneously
 would predict. That contradiction is the demo.
 </div>
 
+<div class="widget">
+<h3>Try it: watch the crossover</h3>
+<div class="slider-row">
+  <input type="range" id="brpm" min="4" max="24" step="0.5" value="15">
+  <output id="brpm-out">15.0 br/min</output>
+</div>
+
+<div class="freq-axis">
+  <div class="freq-axis__track">
+    <div class="freq-axis__band" id="band-lf" style="background:#c98a2e; flex: 0.11 0 0;">LF band (0.04–0.15 Hz)</div>
+    <div class="freq-axis__band" id="band-hf" style="background:#0e9a86; flex: 0.25 0 0;">HF band (0.15–0.4 Hz)</div>
+  </div>
+  <div class="freq-axis__marker" id="freq-marker"></div>
+</div>
+<p class="caption" style="margin-top: 0.9rem;">Respiratory peak is currently inside the <strong id="which-band">—</strong> band.</p>
+
+<svg id="power-chart" viewBox="0 0 640 150" preserveAspectRatio="xMidYMid meet" style="margin-top: 0.6rem;"></svg>
+<div class="legend">
+  <span><span class="swatch block" style="background:#c98a2e"></span>LF power (baroreflex floor + respiration, if peak is here)</span>
+  <span><span class="swatch block" style="background:#0e9a86"></span>HF power (respiration, if peak is here)</span>
+</div>
+
+<div class="readout">
+<div><strong>LF/HF ratio</strong><span id="ro-ratio">—</span></div>
+<div><strong>RMSSD proxy (from lesson 2)</strong><span id="ro-rmssd">—</span></div>
+</div>
+<p class="caption">
+Power values are a simplified single-oscillator teaching proxy (amplitude²),
+not the app's real PSD integration — good enough to show the crossover and
+the ratio's instability, not to read as a clinical number. Drag from 24 down
+to 4 br/min: the ratio swings wildly across the crossover at 9 br/min — it
+doesn't move smoothly at all — while RMSSD proxy rises to a broad peak inside
+the ~6–12 br/min zone and stays clearly higher at 6 br/min than it was back
+at 15. The ratio jumps around; the underlying autonomic signal doesn't.
+</p>
+</div>
+
 <h2>3. VLF and ULF: don't reach for these either</h2>
 <p>
 The same skepticism extends further down the spectrum, for a different
@@ -100,6 +137,7 @@ this recording length," not a number.
 </div>
 </div>
 
+<script src="assets/hrv-model.js"></script>
 <script>
 function checkAnswer(inputId, accepted, feedbackId) {
   var val = document.getElementById(inputId).value.trim().toLowerCase();
@@ -108,6 +146,81 @@ function checkAnswer(inputId, accepted, feedbackId) {
   el.textContent = ok ? "Correct." : "Not quite — see section above and try again.";
   el.className = "feedback " + (ok ? "correct" : "incorrect");
 }
+
+// Crossover widget: freq-axis marker + LF/HF power-split bar + ratio/RMSSD readout.
+(function () {
+  var MIN_BRPM = 4, MAX_BRPM = 24;
+  var AXIS_MIN_HZ = 0.04, AXIS_MAX_HZ = 0.4; // matches the LF+HF band track drawn above
+
+  var slider = document.getElementById('brpm');
+  var out = document.getElementById('brpm-out');
+  var marker = document.getElementById('freq-marker');
+  var whichBand = document.getElementById('which-band');
+  var roRatio = document.getElementById('ro-ratio');
+  var roRmssd = document.getElementById('ro-rmssd');
+  var chart = document.getElementById('power-chart');
+
+  var W = 640, H = 150, PAD = 16, BAR_W = 160, GAP = 60;
+  var svgns = 'http://www.w3.org/2000/svg';
+
+  function el(tag, attrs) {
+    var e = document.createElementNS(svgns, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  function drawChart(lfPower, hfPower) {
+    while (chart.firstChild) chart.removeChild(chart.firstChild);
+    var maxPower = Math.max(lfPower, hfPower, 700); // 700 ~= baroreflex-floor scale, keeps bars comparable frame to frame
+    var scale = (H - PAD * 2) / maxPower;
+    var barsX = [W / 2 - GAP / 2 - BAR_W, W / 2 + GAP / 2];
+    var powers = [lfPower, hfPower];
+    var colors = ['#c98a2e', '#0e9a86'];
+    var labels = ['LF', 'HF'];
+
+    for (var i = 0; i < 2; i++) {
+      var barH = Math.max(2, powers[i] * scale);
+      chart.appendChild(el('rect', {
+        x: barsX[i], y: H - PAD - barH, width: BAR_W, height: barH, fill: colors[i], rx: 3,
+      }));
+      var t = el('text', {
+        x: barsX[i] + BAR_W / 2, y: H - PAD - barH - 8, 'text-anchor': 'middle',
+        'font-size': '13', 'font-family': 'var(--sans)', fill: 'currentColor',
+      });
+      t.textContent = labels[i] + ': ' + powers[i].toFixed(0);
+      chart.appendChild(t);
+    }
+    chart.appendChild(el('line', {
+      x1: PAD, x2: W - PAD, y1: H - PAD, y2: H - PAD, stroke: '#d8d4c8',
+    }));
+  }
+
+  function update() {
+    var brpm = parseFloat(slider.value);
+    out.textContent = brpm.toFixed(1) + ' br/min';
+
+    var split = HRV_MODEL.bandPower(brpm);
+    var fHz = split.fHz;
+
+    var pct = Math.min(100, Math.max(0, (fHz - AXIS_MIN_HZ) / (AXIS_MAX_HZ - AXIS_MIN_HZ) * 100));
+    marker.style.left = pct + '%';
+
+    var inHf = fHz >= HRV_MODEL.HF_BAND[0];
+    whichBand.textContent = inHf ? 'HF' : 'LF';
+    whichBand.style.color = inHf ? '#0e9a86' : '#c98a2e';
+
+    drawChart(split.lfPower, split.hfPower);
+
+    var ratio = split.lfPower / Math.max(split.hfPower, 1);
+    roRatio.textContent = split.hfPower < 1 ? 'very high (HF ≈ 0)' : ratio.toFixed(2);
+
+    var amp = HRV_MODEL.hfAmplitudeMs(brpm);
+    roRmssd.textContent = HRV_MODEL.rmssdProxy(amp, brpm).toFixed(2);
+  }
+
+  slider.addEventListener('input', update);
+  update();
+})();
 </script>
 
 <h2>Primary source</h2>
@@ -126,7 +239,11 @@ session:
 </ol>
 </div>
 
-<p class="nav"><a href="spectral-bands-reference.html">→ Reference: HRV Spectral Bands cheat sheet</a></p>
+<p class="nav">
+<a href="spectral-bands-reference.html">→ Reference: HRV Spectral Bands cheat sheet</a>
+&nbsp;·&nbsp;
+<a href="0002-rsa-resonance-curve.html">Next → Lesson 2: RSA Resonance Curve</a>
+</p>
 
 <p class="ask-agent">
 Stuck on any of this, or want to go deeper on a specific mechanism (e.g. why
