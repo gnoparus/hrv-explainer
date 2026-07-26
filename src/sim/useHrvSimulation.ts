@@ -5,7 +5,10 @@ import { computePsd, bandPower, LF_BAND, HF_BAND, type PsdResult } from './psd'
 import { computePsdAr, type PsdArResult } from './psdAr'
 
 const DISPLAY_WINDOW_SECONDS = 5 * 60 // tachogram/Poincare: clinical short-term duration, for visual continuity
-const METRICS_WINDOW_SECONDS = 60 // "live" metrics: shorter so a slider drag visibly moves the numbers in a demo
+// "live" metrics: shorter so a slider drag visibly moves the numbers in a demo. Exported so the
+// aria-live announcer (MetricsStrip) can schedule its "window has matured" announcement against
+// the same duration the window itself actually takes to refill after a reset.
+export const METRICS_WINDOW_SECONDS = 60
 const CLINICAL_WINDOW_SECONDS = DISPLAY_WINDOW_SECONDS // "clinical" metrics: the 5-min short-term HRV standard
 
 export interface HrvParams {

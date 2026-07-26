@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { InfoTag } from './InfoTag'
+import { METRICS_WINDOW_SECONDS } from '../sim/useHrvSimulation'
 
 interface MetricTileProps {
   label: string
@@ -135,24 +136,36 @@ export function MetricsStrip({
   // Dragging a slider is the app's core interaction, and it had zero non-visual feedback --
   // the ▲/▼ delta arrows are aria-hidden (correctly, as decoration) but nothing spoke a text
   // equivalent. `announceTrigger` bumps on every slider/preset/reset interaction (not on every
-  // simulator beat), so this effect only resets its debounce timer while the user is actually
-  // touching a control, and fires once ~900ms after they stop -- unlike a plain interval, it
-  // stays silent indefinitely while the app is just running with nobody interacting. The
-  // `warming` dependency covers the two cases with no direct interaction to key off: the
-  // initial cold-start reveal and a preset/reset's post-jump settle (see markParamJump).
+  // simulator beat), so this effect only resets its timers while the user is actually touching
+  // a control, and stays silent indefinitely while the app is just running with nobody
+  // interacting -- unlike a plain interval. The `warming` dependency covers the two cases with
+  // no direct interaction to key off: the initial cold-start reveal and a preset/reset's
+  // post-jump settle (see markParamJump).
+  //
+  // Two announcements per settle, not one: the live 60s window takes up to METRICS_WINDOW_SECONDS
+  // to fully mature after a reset (see useHrvSimulation), so a single announcement shortly after
+  // the user stops interacting would speak a still-converging mid-window value and then never
+  // update again. The quick one gives immediate "something changed" feedback (parity with the
+  // sighted delta arrows firing right away); the second, once the window's had enough real time
+  // to refill, speaks the actually-settled reading.
   const latestRef = useRef({ rmssdMs, sdnnMs, hfPower, lfPower })
   latestRef.current = { rmssdMs, sdnnMs, hfPower, lfPower }
   const [announcement, setAnnouncement] = useState('')
   useEffect(() => {
     if (warming) return
-    const id = setTimeout(() => {
+    const announce = () => {
       const v = latestRef.current
       setAnnouncement(
         `RMSSD ${v.rmssdMs.toFixed(1)} milliseconds, SDNN ${v.sdnnMs.toFixed(1)} milliseconds, ` +
           `HF power ${v.hfPower.toFixed(1)}, LF power ${v.lfPower.toFixed(1)}`,
       )
-    }, 900)
-    return () => clearTimeout(id)
+    }
+    const soonId = setTimeout(announce, 900)
+    const settledId = setTimeout(announce, METRICS_WINDOW_SECONDS * 1000)
+    return () => {
+      clearTimeout(soonId)
+      clearTimeout(settledId)
+    }
   }, [warming, announceTrigger])
 
   return (
