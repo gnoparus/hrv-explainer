@@ -552,6 +552,13 @@ input[type='range']:focus-visible::-moz-range-thumb {
   margin-bottom: 4px;
 }
 
+.panel__note {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.4;
+  margin-bottom: var(--space-2);
+}
+
 .session-history__further-reading {
   display: inline-block;
   margin-top: var(--space-4);
