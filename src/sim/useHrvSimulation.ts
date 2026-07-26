@@ -9,7 +9,10 @@ const DISPLAY_WINDOW_SECONDS = 5 * 60 // tachogram/Poincare: clinical short-term
 // aria-live announcer (MetricsStrip) can schedule its "window has matured" announcement against
 // the same duration the window itself actually takes to refill after a reset.
 export const METRICS_WINDOW_SECONDS = 60
-const CLINICAL_WINDOW_SECONDS = DISPLAY_WINDOW_SECONDS // "clinical" metrics: the 5-min short-term HRV standard
+// "clinical" metrics: the 5-min short-term HRV standard. Exported for the same reason as
+// METRICS_WINDOW_SECONDS above -- the aria-live announcer needs the clinical window's own
+// maturation time, not the live window's, when the clinical view is what's selected.
+export const CLINICAL_WINDOW_SECONDS = DISPLAY_WINDOW_SECONDS
 
 export interface HrvParams {
   breathingRateBrpm: number
