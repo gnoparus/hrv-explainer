@@ -90,6 +90,14 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
           hit <strong>Save session</strong>, and it will show up here for comparison and trend
           tracking across runs.
         </div>
+        <a
+          className="session-history__further-reading"
+          href="/learn/0001-spectral-hrv-pitfalls.html"
+          target="_blank"
+          rel="noopener"
+        >
+          Further reading: why LF/HF, VLF, and ULF get over-interpreted →
+        </a>
       </div>
     )
   }
@@ -137,6 +145,15 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
             </div>
           ))}
       </div>
+
+      <a
+        className="session-history__further-reading"
+        href="/learn/0001-spectral-hrv-pitfalls.html"
+        target="_blank"
+        rel="noopener"
+      >
+        Further reading: why LF/HF, VLF, and ULF get over-interpreted →
+      </a>
     </div>
   )
 }
