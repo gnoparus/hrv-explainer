@@ -33,6 +33,10 @@ function Sparkline({ sessions }: { sessions: Session[] }) {
   return (
     <div className="panel">
       <div className="panel__title">RMSSD trend across saved sessions</div>
+      <div className="panel__note">
+        Rising tracks a younger biological-age profile, falling tracks age-typical autonomic
+        decline (Russoniello et al. 2013; Choi et al. 2020) -- not a fixed trajectory.
+      </div>
       <svg className="panel__svg panel__svg--wide" viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}>
         <line x1={SPARK_MARGIN} y1={gridY} x2={SPARK_W - SPARK_MARGIN} y2={gridY} className="gridline" />
         <path d={path} className="trace trace--teal" fill="none" />
