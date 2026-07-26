@@ -269,7 +269,10 @@ input[type='range']:focus-visible::-moz-range-thumb {
    still overflow a real iPad-portrait viewport (measured: ~130px short at 820x1180). Same
    compaction moves as that fallback, applied by width+orientation here instead of height,
    since a portrait iPad is tall in absolute px but still short on room once 2-up charts
-   claim half the width each. */
+   claim half the width each. The 190px square cap below is tuned to zero-scroll at the
+   current 10.9" iPad class (820x1180 / 834x1194, portrait) with a little margin -- it does
+   NOT clear the older/smaller 9th-gen-class iPad (810x1080, ~47px still short); shrink
+   further only if that specific hardware needs to be supported too. */
 @media (min-width: 600px) and (max-width: 1023px) and (orientation: portrait) {
   .app {
     gap: var(--space-3);
@@ -293,7 +296,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
   }
 
   .chart-row > :last-child .panel__svg--square {
-    width: 130px;
+    width: 190px;
   }
 
   .metric-tile {
