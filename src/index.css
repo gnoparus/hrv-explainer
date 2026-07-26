@@ -267,6 +267,12 @@ input[type='range']:focus-visible::-moz-range-thumb {
     flex: 1;
     min-height: 0;
   }
+
+  /* Cancel the desktop cqi cap -- here height comes from the fixed 200px grid row via
+     flex:1 above, not from aspect-ratio, so the cap would just shrink the chart short. */
+  .chart-row .panel__svg--square {
+    max-height: none;
+  }
 }
 
 /* Tablet portrait (iPad et al): the 599px phone breakpoint above would otherwise catch
@@ -337,6 +343,11 @@ input[type='range']:focus-visible::-moz-range-thumb {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: var(--space-3);
+  /* Same fix as chart-row above: without this, grid's default stretch grows every tile to
+     match the tallest column (RMSSD/SDNN stretching to the FFT column's height once Burg AR
+     opens, or at the tablet-portrait 2-up breakpoint), leaving a void under the shorter
+     tiles' values. */
+  align-items: start;
 }
 
 .metrics-strip__pair {
@@ -697,10 +708,20 @@ input[type='range']:focus-visible::-moz-range-thumb {
   min-height: 120px;
 }
 
+/* Poincaré's panel is a container so the square chart can be capped in terms of its own
+   column width (33.34cqi ~= width/3) -- the same height a 3:1 wide chart renders at in an
+   equal-width column. Without this, chart-row's 3 equal columns give Tachogram/PSD (3:1)
+   and Poincaré (1:1) wildly different heights, leaving ~390px of dead space under the two
+   wide panels at ordinary desktop width. */
+.panel:has(> .panel__svg--square) {
+  container-type: inline-size;
+}
+
 .panel__svg--square {
   aspect-ratio: 1 / 1;
   flex: none;
   margin: 0 auto;
+  max-height: 33.34cqi;
 }
 
 .panel__svg--wide {
