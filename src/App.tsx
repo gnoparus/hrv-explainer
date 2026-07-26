@@ -5,10 +5,14 @@ import { Controls } from './components/Controls'
 import { Tachogram } from './components/Tachogram'
 import { PsdChart } from './components/PsdChart'
 import { PoincarePlot } from './components/PoincarePlot'
+import { getPreset } from './sim/presets'
+
+// Read once at module load, not per-render -- the URL doesn't change under this single-screen app.
+const initialPreset = getPreset(new URLSearchParams(window.location.search).get('preset'))
 
 function App() {
-  const [breathingRateBrpm, setBreathingRateBrpm] = useState(12)
-  const [vagalTone, setVagalTone] = useState(0.6)
+  const [breathingRateBrpm, setBreathingRateBrpm] = useState(initialPreset?.breathingRateBrpm ?? 12)
+  const [vagalTone, setVagalTone] = useState(initialPreset?.vagalTone ?? 0.6)
   const [metricsWindow, setMetricsWindow] = useState<'live' | 'clinical'>('live')
   const snapshot = useHrvSimulation({ breathingRateBrpm, vagalTone })
   const active = metricsWindow === 'clinical' ? snapshot.clinical : snapshot.live

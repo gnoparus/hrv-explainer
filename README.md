@@ -7,6 +7,10 @@ treatment) and as a teaching tool for the underlying physiology.
 
 Live: https://hrv-explainer.pages.dev
 
+Add `?preset=<key>` to the URL to jump straight to a named scenario instead
+of dragging sliders live (`young-athlete`, `stressed-older` — see
+`src/sim/presets.ts`).
+
 ## Physiology model
 
 `src/sim/rrGenerator.ts` generates R-R intervals from two oscillators:
