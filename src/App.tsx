@@ -12,6 +12,9 @@ const EXPORT_SVG_STYLE = `
   .trace { stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 0 3px currentColor); }
   .trace--teal { stroke: #2fe7c9; color: #2fe7c9; }
   .trace--violet { stroke: #b18bff; color: #b18bff; fill: rgba(177,139,255,0.25); }
+  .psd-trace--neutral { stroke: #7c8fa0; color: #7c8fa0; fill: rgba(124,143,160,0.15); }
+  .psd-trace--lf { stroke: #ffc857; color: #ffc857; fill: rgba(255,200,87,0.25); }
+  .psd-trace--hf { stroke: #2fe7c9; color: #2fe7c9; fill: rgba(47,231,201,0.25); }
   .gridline { stroke: #1b2733; stroke-width: 1; }
   .band { opacity: 0.12; }
   .band--lf { fill: #ffc857; }
@@ -97,6 +100,7 @@ function App() {
         sdnnMs={snapshot.sdnnMs}
         lfPower={snapshot.lfPower}
         hfPower={snapshot.hfPower}
+        beatCount={snapshot.beatCount}
       />
 
       <div className="chart-row" ref={exportRef}>
