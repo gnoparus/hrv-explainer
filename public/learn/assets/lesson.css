@@ -156,9 +156,12 @@ code {
   margin-left: 0.5rem;
   padding: 0.4rem 0.8rem;
   min-height: 44px;
-  border: 1px solid var(--rule);
+  /* --rule against the .quiz container's own --panel-raised background is ~1.6:1 --
+     nearly invisible. Match the adjacent input's --panel background (a real contrast
+     step down from the container) and the stronger --ink-dim border it already uses. */
+  border: 1px solid var(--ink-dim);
   border-radius: 10px;
-  background: var(--panel-raised);
+  background: var(--panel);
   color: var(--ink-dim);
   cursor: pointer;
 }
