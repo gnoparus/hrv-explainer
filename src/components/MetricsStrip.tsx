@@ -80,6 +80,7 @@ export function MetricsStrip({
   onMetricsWindowChange,
   clinicalReadySec,
   isLiveSource,
+  announceTrigger,
 }: {
   rmssdMs: number
   sdnnMs: number
@@ -93,6 +94,9 @@ export function MetricsStrip({
   onMetricsWindowChange: (w: MetricsWindow) => void
   clinicalReadySec: number
   isLiveSource: boolean
+  // Bumped by the caller on every slider/preset/reset interaction -- see the aria-live effect
+  // below for why this (not a free-running interval) is what drives the announcement.
+  announceTrigger: number
 }) {
   const [showAr, setShowAr] = useState(false)
   const isClinical = metricsWindow === 'clinical'
@@ -130,24 +134,26 @@ export function MetricsStrip({
 
   // Dragging a slider is the app's core interaction, and it had zero non-visual feedback --
   // the ▲/▼ delta arrows are aria-hidden (correctly, as decoration) but nothing spoke a text
-  // equivalent. A new beat lands roughly once a second, so a debounce keyed to these values
-  // would restart on every beat and never actually fire -- a periodic interval, reading the
-  // latest values from a ref, announces every ~2.5s instead: frequent enough to track a slider
-  // drag, not so frequent it spams the screen reader with every intermediate value.
+  // equivalent. `announceTrigger` bumps on every slider/preset/reset interaction (not on every
+  // simulator beat), so this effect only resets its debounce timer while the user is actually
+  // touching a control, and fires once ~900ms after they stop -- unlike a plain interval, it
+  // stays silent indefinitely while the app is just running with nobody interacting. The
+  // `warming` dependency covers the two cases with no direct interaction to key off: the
+  // initial cold-start reveal and a preset/reset's post-jump settle (see markParamJump).
   const latestRef = useRef({ rmssdMs, sdnnMs, hfPower, lfPower })
   latestRef.current = { rmssdMs, sdnnMs, hfPower, lfPower }
   const [announcement, setAnnouncement] = useState('')
   useEffect(() => {
     if (warming) return
-    const id = setInterval(() => {
+    const id = setTimeout(() => {
       const v = latestRef.current
       setAnnouncement(
         `RMSSD ${v.rmssdMs.toFixed(1)} milliseconds, SDNN ${v.sdnnMs.toFixed(1)} milliseconds, ` +
           `HF power ${v.hfPower.toFixed(1)}, LF power ${v.lfPower.toFixed(1)}`,
       )
-    }, 2500)
-    return () => clearInterval(id)
-  }, [warming])
+    }, 900)
+    return () => clearTimeout(id)
+  }, [warming, announceTrigger])
 
   return (
     <div className="metrics-strip-wrap">
@@ -212,8 +218,11 @@ export function MetricsStrip({
           </div>
           {/* Always mounted (not gated behind `showAr &&`) so the height-animation below has
               real content to grow from -- an instant mount+reflow was the original P2, this
-              is the "animate the height change" fix rather than reserving dead space. */}
-          <div className={`metrics-strip__ar-row${showAr ? ' metrics-strip__ar-row--open' : ''}`}>
+              is the "animate the height change" fix rather than reserving dead space. `inert`
+              when collapsed removes the two AR InfoTag buttons from tab order and the a11y
+              tree -- without it they're invisible (zero height + overflow:hidden) but still
+              focusable and screen-reader-reachable. */}
+          <div className={`metrics-strip__ar-row${showAr ? ' metrics-strip__ar-row--open' : ''}`} inert={!showAr}>
             <div className="metrics-strip__ar-row-inner">
               <span className="metrics-strip__pair-group-label">Burg AR (order {arOrder})</span>
               <div className="metrics-strip__pair">

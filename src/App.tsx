@@ -34,6 +34,10 @@ function App() {
   const [sessions, setSessions] = useState(loadSessions)
   const [source, setSource] = useState<'simulated' | 'uploaded'>('simulated')
   const [uploadedData, setUploadedData] = useState<ParsedRR | null>(null)
+  // Bumped on every slider/preset/reset interaction so MetricsStrip's aria-live announcer can
+  // debounce off real user input instead of a free-running interval that never goes quiet.
+  const [interactionTick, setInteractionTick] = useState(0)
+  const bumpInteraction = () => setInteractionTick((t) => t + 1)
 
   // Always run the simulator (hooks can't be conditional) -- its output is simply unused
   // while an uploaded file is the active source.
@@ -56,12 +60,14 @@ function App() {
   function handlePresetVagalTone(v: number) {
     setVagalTone(v)
     markParamJump()
+    bumpInteraction()
   }
 
   function handleReset() {
     setBreathingRateBrpm(initialBreathingRateBrpm)
     setVagalTone(initialVagalTone)
     markParamJump()
+    bumpInteraction()
   }
 
   function handleSave() {
@@ -160,6 +166,7 @@ function App() {
                 onMetricsWindowChange={setMetricsWindow}
                 clinicalReadySec={snapshot.clinicalReadySec}
                 isLiveSource={source === 'simulated'}
+                announceTrigger={interactionTick}
               />
 
               <div className="chart-row">
@@ -193,8 +200,14 @@ function App() {
             <Controls
               breathingRateBrpm={breathingRateBrpm}
               vagalTone={vagalTone}
-              onBreathingRateChange={setBreathingRateBrpm}
-              onVagalToneChange={setVagalTone}
+              onBreathingRateChange={(v) => {
+                setBreathingRateBrpm(v)
+                bumpInteraction()
+              }}
+              onVagalToneChange={(v) => {
+                setVagalTone(v)
+                bumpInteraction()
+              }}
               onPresetVagalTone={handlePresetVagalTone}
               onReset={handleReset}
               showPacer={showPacer}

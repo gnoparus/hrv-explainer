@@ -131,7 +131,14 @@ export function useHrvSimulation(params: HrvParams): HrvSimulation {
     let beatCount = 0
     let cancelled = false
     let timeoutId: ReturnType<typeof setTimeout>
-    let liveWindowResetAt = -Infinity
+    // Shared by both windows, not just the live one -- a clinical (5-min) save made shortly
+    // after a jump previously kept averaging in pre-jump beats for up to 5 minutes, so a
+    // session could be saved under the new breathing-rate/vagal-tone params while its metrics
+    // were still dominated by the old regime. Rebasing both windows to the same cutoff means a
+    // clinical read post-jump is held to the same "must be pure new-regime data" standard as
+    // the live one -- which also happens to match real HRV practice: a 5-min short-term
+    // recording isn't valid across a physiological state change either.
+    let windowResetAt = -Infinity
 
     function tick() {
       if (cancelled) return
@@ -142,7 +149,7 @@ export function useHrvSimulation(params: HrvParams): HrvSimulation {
         vagalTone: paramsRef.current.vagalTone,
       })
       if (pendingJumpRef.current) {
-        liveWindowResetAt = beat.t
+        windowResetAt = beat.t
         pendingJumpRef.current = false
       }
       raw.push(beat)
@@ -150,20 +157,23 @@ export function useHrvSimulation(params: HrvParams): HrvSimulation {
       raw = raw.filter((p) => p.t >= cutoff)
 
       const metricsCutoff = beat.t - METRICS_WINDOW_SECONDS
-      const recent = raw.filter((p) => p.t >= Math.max(metricsCutoff, liveWindowResetAt))
+      const recent = raw.filter((p) => p.t >= Math.max(metricsCutoff, windowResetAt))
+      const clinicalPoints = raw.filter((p) => p.t >= windowResetAt)
 
-      // Elapsed sim time, not raw's filtered span: `raw` only retains points with
-      // t >= beat.t - DISPLAY_WINDOW_SECONDS, so its oldest point always lags slightly behind
-      // that cutoff by up to one RR interval -- raw[last].t - raw[0].t asymptotes just under
-      // 300 and never reaches it, leaving the clinical window stuck "gathering" forever.
-      const clinicalReadySec = Math.min(CLINICAL_WINDOW_SECONDS, beat.t)
+      // Elapsed sim time since the window's last reset (cold start, or a param jump), not
+      // raw's filtered span: `raw` only retains points with t >= beat.t - DISPLAY_WINDOW_SECONDS,
+      // so its oldest point always lags slightly behind that cutoff by up to one RR interval --
+      // raw[last].t - raw[0].t asymptotes just under 300 and never reaches it, leaving the
+      // clinical window stuck "gathering" forever.
+      const sinceReset = windowResetAt === -Infinity ? beat.t : beat.t - windowResetAt
+      const clinicalReadySec = Math.min(CLINICAL_WINDOW_SECONDS, sinceReset)
 
       setSnapshot({
         points: raw,
         beatCount,
         live: computeWindowMetrics(recent),
         liveWindowBeatCount: recent.length,
-        clinical: computeWindowMetrics(raw),
+        clinical: computeWindowMetrics(clinicalPoints),
         clinicalReadySec,
       })
 
