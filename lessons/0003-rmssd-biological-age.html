@@ -114,7 +114,35 @@ no — that's not what either paper measured.</p>
 
 </div>
 
-<h2>4. The pitfall, named</h2>
+<h2>4. How much of HRV is really "age"?</h2>
+<p>
+Rung A calls Choi's finding "established, modest effect size." Here's what
+that effect size actually means: R² is the share of an index's variance
+that age alone explains. Click between the three indices Choi reported —
+the "age" share never gets close to half.
+</p>
+
+<div class="widget">
+<h3>Try it: age's real share, by index</h3>
+<div class="prop-toggle">
+<button type="button" class="prop-btn active" data-r2="0.298" data-label="HRV-index">HRV-index</button>
+<button type="button" class="prop-btn" data-r2="0.343" data-label="SDNN">SDNN</button>
+<button type="button" class="prop-btn" data-r2="0.414" data-label="LF">LF</button>
+</div>
+<div class="prop-bar">
+<div class="prop-bar__seg prop-bar__seg--age" id="prop-age-seg"><span id="prop-age-label">Age: 29.8%</span></div>
+<div class="prop-bar__seg prop-bar__seg--other" id="prop-other-seg"><span id="prop-other-label">Everything else: 70.2%</span></div>
+</div>
+<p class="caption">
+R² values from Choi et al. (2020), cross-sectional. Even LF — the index age
+explains best — still leaves more than half its variance to everything
+else: individual physiology, measurement noise, the day someone happened to
+be tested. A single reading can't be confidently placed on this line, in
+either direction.
+</p>
+</div>
+
+<h2>5. The pitfall, named</h2>
 <p>
 The gap between rungs A and C is a specific, reusable mistake: a
 <strong>cross-sectional</strong> finding (different people, compared once)
@@ -175,15 +203,43 @@ follow-up question:
 <a href="../reference/claim-strength-checklist.html">Reference: Claim-Strength Checklist</a>
 &nbsp;·&nbsp;
 <a href="../reference/spectral-bands-reference.html">Reference: HRV Spectral Bands</a>
+&nbsp;·&nbsp;
+<a href="0004-lf-amplitude-vagal-tone.html">Next → Lesson 4: Why Does One Slider Drive Both LF and HF?</a>
 </p>
 
 <p class="ask-agent">
 Want to see the exact <code>SessionHistory.tsx</code> line flagged here as an
-app-copy follow-up, or start scoping lesson 4 (the <code>A_LF_BASE_MS</code>
-constant that couples LF amplitude to the same <code>vagalTone</code> slider
-as HF)? Ask your teaching agent.
+app-copy follow-up? Ask your teaching agent — or continue straight on to
+lesson 4, which covers the <code>A_LF_BASE_MS</code> constant that couples
+LF amplitude to the same <code>vagalTone</code> slider as HF.
 </p>
 
 <script src="../assets/quiz.js"></script>
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.prop-btn');
+  var ageSeg = document.getElementById('prop-age-seg');
+  var otherSeg = document.getElementById('prop-other-seg');
+  var ageLabel = document.getElementById('prop-age-label');
+  var otherLabel = document.getElementById('prop-other-label');
+
+  function render(btn) {
+    var r2 = parseFloat(btn.getAttribute('data-r2'));
+    var label = btn.getAttribute('data-label');
+    var agePct = (r2 * 100).toFixed(1);
+    var otherPct = (100 - r2 * 100).toFixed(1);
+    ageSeg.style.width = agePct + '%';
+    otherSeg.style.width = otherPct + '%';
+    ageLabel.textContent = 'Age: ' + agePct + '%';
+    otherLabel.textContent = 'Everything else: ' + otherPct + '%';
+    buttons.forEach(function (b) { b.classList.toggle('active', b === btn); });
+  }
+
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () { render(btn); });
+  });
+  render(buttons[0]);
+})();
+</script>
 </body>
 </html>
