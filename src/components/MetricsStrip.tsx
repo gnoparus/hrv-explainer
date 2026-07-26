@@ -91,15 +91,26 @@ export function MetricsStrip({
   // "Gathering" only makes sense for the live simulator, whose buffer is still filling.
   // An uploaded file is a fixed dataset -- if it's shorter than the window, that's just its
   // real duration, not a value waiting to arrive, so uploaded sources never show this state.
-  const warming = isLiveSource && (isClinical ? clinicalReadySec < 300 : beatCount < 8)
+  // Blank (dash) only while there's truly no data (<8 beats) -- once the clinical window has
+  // *some* beats, show the converging partial-window value instead of blanking the tiles for
+  // up to 5 minutes while the charts below keep rendering fine; the "converging… Xs/300s"
+  // caption below (via clinicalFilling) keeps the value's provisional status visible, not silent.
+  const warming = isLiveSource && beatCount < 8
+  // Was `clinicalReadySec >= 300 || isLiveSource` -- that OR made isLiveSource alone always
+  // win, which was invisible while the tiles blanked below 300s (this branch was unreachable
+  // for that case); now that partial-window values render instead of blanking, the bug would
+  // show "rolling 5-min window" from the very first beat. Distinguish still-filling explicitly.
+  const clinicalFilling = isClinical && isLiveSource && clinicalReadySec < 300
   const caption = warming
     ? isClinical
       ? `gathering… ${Math.floor(clinicalReadySec)}/300s`
       : 'collecting baseline…'
     : isClinical
-      ? clinicalReadySec >= 300 || isLiveSource
-        ? 'rolling 5-min window (clinical standard)'
-        : `full recording (${Math.floor(clinicalReadySec)}s, shorter than the 5-min standard)`
+      ? clinicalFilling
+        ? `converging — ${Math.floor(clinicalReadySec)}/300s toward the clinical standard`
+        : clinicalReadySec >= 300 || isLiveSource
+          ? 'rolling 5-min window (clinical standard)'
+          : `full recording (${Math.floor(clinicalReadySec)}s, shorter than the 5-min standard)`
       : isLiveSource || clinicalReadySec >= 60
         ? 'rolling 60s window'
         : `full recording (${Math.floor(clinicalReadySec)}s)`
