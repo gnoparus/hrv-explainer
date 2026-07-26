@@ -6,6 +6,8 @@ interface ControlsProps {
   vagalTone: number
   onBreathingRateChange: (v: number) => void
   onVagalToneChange: (v: number) => void
+  onPresetVagalTone: (v: number) => void
+  onReset: () => void
   showPacer: boolean
   onTogglePacer: () => void
 }
@@ -17,6 +19,8 @@ export function Controls({
   vagalTone,
   onBreathingRateChange,
   onVagalToneChange,
+  onPresetVagalTone,
+  onReset,
   showPacer,
   onTogglePacer,
 }: ControlsProps) {
@@ -127,11 +131,14 @@ export function Controls({
       <div className="control control--presets">
         <span className="control__preset-label">Vagal tone preset</span>
         <div className="preset-buttons">
-          <button type="button" onClick={() => onVagalToneChange(0.85)}>
+          <button type="button" onClick={() => onPresetVagalTone(0.85)}>
             Young
           </button>
-          <button type="button" onClick={() => onVagalToneChange(0.25)}>
+          <button type="button" onClick={() => onPresetVagalTone(0.25)}>
             Older
+          </button>
+          <button type="button" onClick={onReset}>
+            Reset
           </button>
         </div>
       </div>
