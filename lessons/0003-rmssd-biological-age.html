@@ -23,7 +23,10 @@ screen unrehearsed.
 </p>
 
 <h2>1. Two sentences, two different strengths</h2>
-<p>The app makes this claim in two places. Read them side by side:</p>
+<p>The app used to make this claim in two places, at two different
+confidence levels -- the tooltip below is still the app's current copy, the
+panel note was the mismatched one and has since been reworded to match it.
+Read them side by side:</p>
 
 <p style="font-family: var(--sans); font-size: 0.92rem;">
 <strong>RMSSD tile tooltip</strong> (<code>MetricsStrip.tsx</code>) — hedged:
@@ -36,17 +39,19 @@ worth watching across sessions, <strong>not a fixed trajectory</strong>."
 </p>
 
 <div class="contested">
-<strong>Session-history panel note — asserted, not hedged</strong>
+<strong>Session-history panel note — was asserted, not hedged (original copy, fixed since)</strong>
 "...in real repeated measurements, a rising trend <strong>tracks a younger
 biological-age profile</strong> and falling tracks age-typical autonomic
 decline (Russoniello et al. 2013; Choi et al. 2020)."
+<p style="margin: 0.5rem 0 0; font-size: 0.85em;">This sentence no longer ships — <code>SessionHistory.tsx</code> was reworded to match the tooltip's hedge level. Kept here as the "before" side of the comparison.</p>
 </div>
 
 <p>
-Same two citations, different confidence. One says "proposed as... a trend
-worth watching." The other says a rising line <em>tracks</em> getting
-younger. Only one of those is something the cited papers actually test — the
-evidence ladder below shows which.
+Same two citations, different confidence. One said "proposed as... a trend
+worth watching." The other said a rising line <em>tracks</em> getting
+younger. Only one of those was something the cited papers actually test —
+the evidence ladder below shows which, and why the second was fixed to
+match the first.
 </p>
 
 <h2>2. What the three papers actually say</h2>
@@ -106,9 +111,10 @@ cover aging, which this paper never discusses.</p>
 <div class="ladder__body">
 <p>Neither cited paper tests a within-person trend over repeated sessions.</p>
 <p class="ladder__quote">Choi is between-person: different people measured once, not the same person tracked over time. Russoniello's strongest age correlate (r=−0.67) was maximum HR variation, not RMSSD — the metric on the app's tile isn't the one the paper validated.</p>
-<p>This is the sentence in <code>SessionHistory.tsx</code>. If a clinician
-asks "does a rising line mean my patient got younger?", the honest answer is
-no — that's not what either paper measured.</p>
+<p>This was the sentence in <code>SessionHistory.tsx</code> — since fixed to
+drop the RMSSD-specific attribution. If a clinician asks "does a rising line
+mean my patient got younger?", the honest answer is no — that's not what
+either paper measured.</p>
 </div>
 </details>
 
