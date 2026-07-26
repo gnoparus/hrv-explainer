@@ -115,7 +115,7 @@ export function Controls({
       </div>
 
       <div className="control control--presets">
-        <span className="control__preset-label">Age preset</span>
+        <span className="control__preset-label">Vagal tone preset</span>
         <div className="preset-buttons">
           <button type="button" onClick={() => onVagalToneChange(0.85)}>
             Young

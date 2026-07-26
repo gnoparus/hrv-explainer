@@ -625,6 +625,10 @@ input[type='range']:focus-visible::-moz-range-thumb {
   fill: var(--text-dim);
   font-size: 11px;
   text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--bg-panel);
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 .axis-tick {
