@@ -123,6 +123,14 @@ export function useHrvSimulation(params: HrvParams): HrvSimulation {
   const pendingJumpRef = useRef(false)
   const markParamJump = useRef(() => {
     pendingJumpRef.current = true
+    // Don't wait for the next tick (beats arrive at heart-rate cadence, up to ~2s away) to
+    // reflect the jump -- without this, liveWindowBeatCount/clinicalReadySec stay at their
+    // pre-jump (fully warmed) values for that whole gap, so a Save click in that window would
+    // record the *old* regime's metrics under the *new* params, and MetricsStrip would keep
+    // showing the stale reading instead of the dash it shows for every other warming state.
+    // setSnapshot's identity is stable across renders (React guarantees this for useState
+    // setters), so capturing it once here via useRef is safe.
+    setSnapshot((prev) => ({ ...prev, liveWindowBeatCount: 0, clinicalReadySec: 0 }))
   }).current
 
   useEffect(() => {
