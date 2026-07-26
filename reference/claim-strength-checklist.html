@@ -13,9 +13,11 @@
 
 <p>
 Before repeating a physiological claim to a skeptical clinician, run its
-citation through these five checks. A citation being <em>real</em> isn't the
+citation through these six checks. A citation being <em>real</em> isn't the
 same as it <em>supporting the exact sentence it's attached to</em> — that gap
-is what lesson 3 walks through in detail.
+is what lesson 3 walks through in detail. Check 6 covers a different gap:
+sometimes there's no bad citation at all, just no citation — lesson 4 walks
+through that case.
 </p>
 
 <ol>
@@ -24,6 +26,7 @@ is what lesson 3 walks through in detail.
 <li><strong>Same variable, or a stand-in?</strong> Does the paper measure the exact metric you're citing it for, or something correlated-but-different?</li>
 <li><strong>What population?</strong> A finding validated in one domain (e.g. oncology patients) doesn't automatically generalize to another (e.g. healthy adults, or your app's demo).</li>
 <li><strong>What's the effect size?</strong> "Statistically significant" and "explains most of the variance" are different claims — check R²/r, not just the p-value.</li>
+<li><strong>Did a later, more rigorous study test it and reject it?</strong> An early reframe or proposed mechanism can look like a defense until you check whether it survived direct testing (e.g. an invasive measurement beating an inference from HRV alone). Cite the reframe alongside its rebuttal, never instead of it.</li>
 </ol>
 
 <div class="contested">
@@ -39,12 +42,26 @@ RMSSD. None of the three, alone or combined, clears check 2 for a
 within-person trend claim.
 </div>
 
+<div class="contested">
+<strong>Worked example — lesson 4, check 6</strong>
+No citation defends <code>rrGenerator.ts</code> scaling LF amplitude off the
+same <code>vagalTone</code> slider that drives HF. The nearest candidate
+defense — Rahman &amp; Goldstein (2011), LF power reflects baroreflex gain
+— looks promising in isolation, but Martelli et al. (2014) tested it
+directly with implanted cardiac-sympathetic-nerve recordings and rejected
+it. Citing Goldstein alone would hand a well-read clinician an easy
+rebuttal; the honest answer is that no single mechanism is well enough
+established to model, not that one was found and implemented.
+</div>
+
 <h2 id="citations">Citations</h2>
 <div class="citations">
 <ol>
 <li id="cite1">Russoniello, C.V., Zhirnov, Y.N., Pougatchev, V.I. &amp; Gribkov, E.N. (2013) "Heart Rate Variability and Biological Age: Implications for Health and Gaming." <em>Cyberpsychology, Behavior, and Social Networking</em>. <a href="https://pubmed.ncbi.nlm.nih.gov/23574369/" target="_blank" rel="noopener">pubmed.ncbi.nlm.nih.gov/23574369</a></li>
 <li id="cite2">Choi, J., Cha, W. &amp; Park, M.G. (2020) "Declining Trends of Heart Rate Variability According to Aging in Healthy Asian Adults." <em>Frontiers in Aging Neuroscience</em>, 12:610626. <a href="https://www.frontiersin.org/journals/aging-neuroscience/articles/10.3389/fnagi.2020.610626/full" target="_blank" rel="noopener">frontiersin.org</a></li>
 <li id="cite3">Martinez, C. et al. (2024) "How to properly evaluate cardiac vagal tone in oncology studies: a state-of-the-art review." <em>Journal of the National Cancer Center</em>. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11256691/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC11256691</a></li>
+<li id="cite4">Rahman, F. &amp; Goldstein, D.S. (2011) "Low-frequency power of heart rate variability is not a measure of cardiac sympathetic tone but may be a measure of modulation of cardiac autonomic outflows by baroreflexes." <em>Experimental Physiology</em>, 96(12). <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3224799/" target="_blank" rel="noopener">pmc.ncbi.nlm.nih.gov/articles/PMC3224799</a></li>
+<li id="cite5">Martelli, D. et al. (2014) "The low frequency power of heart rate variability is neither a measure of cardiac sympathetic tone nor of baroreflex sensitivity." <em>American Journal of Physiology-Heart and Circulatory Physiology</em>, 307(7). <a href="https://pubmed.ncbi.nlm.nih.gov/25063795/" target="_blank" rel="noopener">pubmed.ncbi.nlm.nih.gov/25063795</a></li>
 </ol>
 </div>
 
@@ -52,6 +69,8 @@ within-person trend claim.
 <a href="../lessons/0003-rmssd-biological-age.html">← Lesson 3: Does RMSSD Track Biological Age?</a>
 &nbsp;·&nbsp;
 <a href="spectral-bands-reference.html">Reference: HRV Spectral Bands</a>
+&nbsp;·&nbsp;
+<a href="../lessons/0004-lf-amplitude-vagal-tone.html">Lesson 4: Why Does One Slider Drive Both LF and HF?</a>
 </p>
 
 </body>

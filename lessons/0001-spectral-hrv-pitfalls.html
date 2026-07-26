@@ -96,19 +96,23 @@ at 15. The ratio jumps around; the underlying autonomic signal doesn't.
 
 <h2>3. VLF and ULF: don't reach for these either</h2>
 <p>
-The same skepticism extends further down the spectrum, for a different
-reason: not "the interpretation is wrong" but "there usually isn't enough
-signal to interpret at all."
+The same skepticism extends further down the spectrum, but for two
+<em>different</em> reasons that shouldn't be collapsed into one answer:
+VLF's problem is interpretation, ULF's is that the recording can't reach it
+at all.
 </p>
 <ul>
-<li><strong>VLF</strong> (0.0033–0.04 Hz) is linked to thermoregulation, the renin-angiotensin system, and intrinsic cardiac nervous system activity — but per Shaffer &amp; Ginsberg (2017)<sup><a href="#cite3">3</a></sup>, "there is uncertainty regarding the physiological mechanisms responsible for activity within this band," even with an adequate recording.</li>
-<li><strong>ULF</strong> (≤0.0033 Hz) reflects circadian rhythm and requires a full 24-hour recording to mean anything. A short-term recording — the kind this app simulates — cannot resolve ULF at all; there isn't a full cycle in the window.</li>
+<li><strong>VLF</strong> (0.0033–0.04 Hz) is linked to thermoregulation, the renin-angiotensin system, and intrinsic cardiac nervous system activity — but per Shaffer &amp; Ginsberg (2017)<sup><a href="#cite3">3</a></sup>, "there is uncertainty regarding the physiological mechanisms responsible for activity within this band," even with an adequate recording. This app's clinical window is exactly 5 minutes (<code>CLINICAL_WINDOW_SECONDS</code>, <code>src/sim/useHrvSimulation.ts</code>) — right at Shaffer &amp; Ginsberg's stated minimum, so VLF power <em>can</em> be computed here. It just shouldn't be over-interpreted once it is.</li>
+<li><strong>ULF</strong> (≤0.0033 Hz) reflects circadian rhythm and requires a full 24-hour recording to mean anything. A 5-minute recording — what this app actually simulates — cannot resolve ULF at all; there isn't a full cycle in the window, full stop.</li>
 </ul>
 <p>
-Practical takeaway for a short-term recording (a few minutes, like the app
-demos): VLF and ULF should not be presented as autonomic findings. If a
-committee member asks about them, the honest answer is "not resolvable at
-this recording length," not a number.
+Practical takeaway: if a committee member asks about ULF, the honest answer
+is "not resolvable at this recording length" — there's no number to give.
+If they ask about VLF, there <em>is</em> a number (this app's window clears
+the 5-minute bar), but the honest answer is that its physiological meaning
+is still genuinely uncertain even so — don't present it as an autonomic
+finding. Different question, different answer; don't reach for the same
+one-liner for both.
 </p>
 
 <h2>Quiz</h2>
