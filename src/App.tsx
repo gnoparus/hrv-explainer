@@ -103,15 +103,22 @@ function App() {
               HRV Simulator
             </div>
             {source === 'simulated' && (
-              <button
-                type="button"
-                className="save-session-btn"
-                onClick={handleSave}
-                disabled={metricsWarming}
-                title={metricsWarming ? 'Wait for the metrics to finish warming up before saving' : undefined}
-              >
-                Save session
-              </button>
+              <div className="save-session">
+                <button
+                  type="button"
+                  className="save-session-btn"
+                  onClick={handleSave}
+                  disabled={metricsWarming}
+                  aria-describedby={metricsWarming ? 'save-session-reason' : undefined}
+                >
+                  Save session
+                </button>
+                {metricsWarming && (
+                  <span id="save-session-reason" className="save-session__reason">
+                    collecting baseline&hellip;
+                  </span>
+                )}
+              </div>
             )}
           </header>
 

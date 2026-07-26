@@ -6,17 +6,26 @@ const SPARK_W = 600
 const SPARK_H = 120
 const SPARK_MARGIN = 12
 
-function Sparkline({ sessions }: { sessions: Session[] }) {
+// One entry per sparkline tile -- colors match CompareTable below so a metric reads the
+// same color everywhere in History, not just in the compare rows.
+const SPARK_METRICS = [
+  { key: 'rmssdMs', label: 'RMSSD', unit: 'ms', traceClass: 'trace--teal' },
+  { key: 'sdnnMs', label: 'SDNN', unit: 'ms', traceClass: 'trace--violet' },
+  { key: 'hfPower', label: 'HF power', unit: 'ms²', traceClass: 'trace--teal' },
+  { key: 'lfPower', label: 'LF power', unit: 'ms²', traceClass: 'trace--amber' },
+] as const satisfies readonly { key: keyof Session; label: string; unit: string; traceClass: string }[]
+
+function Sparkline({ sessions, metric }: { sessions: Session[]; metric: (typeof SPARK_METRICS)[number] }) {
   const { path, gridY } = useMemo(() => {
-    const values = sessions.map((s) => s.rmssdMs)
+    const values = sessions.map((s) => s[metric.key] as number)
     const x = scaleLinear()
       .domain([0, Math.max(1, sessions.length - 1)])
       .range([SPARK_MARGIN, SPARK_W - SPARK_MARGIN])
     const minV = Math.min(...values)
     const maxV = Math.max(...values)
     // Pad around the actual min/max instead of anchoring at 0 -- with a realistic 2-3 saved
-    // sessions per demo, close RMSSD values (e.g. 17.5ms/17.9ms) rendered against a 0-anchored
-    // domain draw as a flat line. The maxV*0.05/1ms floors keep some pad when every value is
+    // sessions per demo, close values (e.g. 17.5ms/17.9ms) rendered against a 0-anchored
+    // domain draw as a flat line. The maxV*0.05/1 floors keep some pad when every value is
     // identical, where (maxV-minV)*0.2 alone would collapse to 0.
     const pad = Math.max((maxV - minV) * 0.2, maxV * 0.05, 1)
     const y = scaleLinear()
@@ -28,20 +37,32 @@ function Sparkline({ sessions }: { sessions: Session[] }) {
       .curve(curveMonotoneX)
     const mean = values.reduce((a, b) => a + b, 0) / values.length
     return { path: lineGen(values) ?? '', gridY: y(mean) }
-  }, [sessions])
+  }, [sessions, metric.key])
 
   return (
     <div className="panel">
-      <div className="panel__title">RMSSD trend across saved sessions</div>
-      <div className="panel__note">
-        These points move with the breathing-rate/vagal-tone sliders, not elapsed time -- in real
-        repeated measurements, a rising trend tracks a younger biological-age profile and falling
-        tracks age-typical autonomic decline (Russoniello et al. 2013; Choi et al. 2020).
+      <div className="panel__title">
+        {metric.label} ({metric.unit}) trend
       </div>
       <svg className="panel__svg panel__svg--wide" viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}>
         <line x1={SPARK_MARGIN} y1={gridY} x2={SPARK_W - SPARK_MARGIN} y2={gridY} className="gridline" />
-        <path d={path} className="trace trace--teal" fill="none" />
+        <path d={path} className={`trace ${metric.traceClass}`} style={{ fill: 'none' }} />
       </svg>
+    </div>
+  )
+}
+
+function SparklineGrid({ sessions }: { sessions: Session[] }) {
+  return (
+    <div className="sparkline-grid">
+      <div className="panel__note sparkline-grid__note">
+        These points move with the breathing-rate/vagal-tone sliders, not elapsed time -- in real
+        repeated measurements, a rising RMSSD/HF trend tracks a younger biological-age profile and
+        falling tracks age-typical autonomic decline (Russoniello et al. 2013; Choi et al. 2020).
+      </div>
+      {SPARK_METRICS.map((metric) => (
+        <Sparkline key={metric.key} sessions={sessions} metric={metric} />
+      ))}
     </div>
   )
 }
@@ -85,6 +106,7 @@ function CompareTable({ sessions }: { sessions: Session[] }) {
 
 export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; onDelete: (id: string) => void }) {
   const [selected, setSelected] = useState<string[]>([])
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -118,7 +140,7 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
 
   return (
     <div className="session-history">
-      {sessions.length > 1 && <Sparkline sessions={sessions} />}
+      {sessions.length > 1 && <SparklineGrid sessions={sessions} />}
       {selectedSessions.length >= 2 && <CompareTable sessions={selectedSessions} />}
 
       <div className="session-list">
@@ -146,18 +168,42 @@ export function SessionHistory({ sessions, onDelete }: { sessions: Session[]; on
               <span className="session-list__metric" style={{ color: 'var(--c-violet)' }}>
                 {s.sdnnMs.toFixed(1)} ms
               </span>
-              <button
-                type="button"
-                className="session-list__delete"
-                onClick={() => {
-                  if (window.confirm(`Delete session from ${new Date(s.timestamp).toLocaleString()}? This can't be undone.`)) {
-                    onDelete(s.id)
-                  }
-                }}
-                aria-label={`Delete session from ${new Date(s.timestamp).toLocaleString()}`}
-              >
-                ✕
-              </button>
+              {confirmDeleteId === s.id ? (
+                // autoFocus on mount, not a ref+effect -- this branch only ever mounts fresh
+                // (React key-swaps it in for the ✕ button below), so the DOM-native "focus
+                // this element when it appears" behavior is exactly what's needed. Cancel
+                // gets it, not Delete -- same reasoning as a native confirm dialog defaulting
+                // focus to the non-destructive option.
+                <div className="session-list__confirm">
+                  <button
+                    type="button"
+                    className="session-list__confirm-cancel"
+                    autoFocus
+                    onClick={() => setConfirmDeleteId(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="session-list__confirm-delete"
+                    onClick={() => {
+                      onDelete(s.id)
+                      setConfirmDeleteId(null)
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="session-list__delete"
+                  onClick={() => setConfirmDeleteId(s.id)}
+                  aria-label={`Delete session from ${new Date(s.timestamp).toLocaleString()}`}
+                >
+                  ✕
+                </button>
+              )}
             </div>
           ))}
       </div>

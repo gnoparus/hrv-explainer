@@ -110,7 +110,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .tabbar__tab {
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -150,8 +150,14 @@ input[type='range']:focus-visible::-moz-range-thumb {
   justify-content: space-between;
 }
 
+.save-session {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
 .save-session-btn {
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -170,6 +176,14 @@ input[type='range']:focus-visible::-moz-range-thumb {
   color: var(--text-dim);
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Reaches touch users the disabled button's `title` attribute never could -- see
+   App.tsx's `aria-describedby`. Visible at all times the button is disabled, not
+   hover-only. */
+.save-session__reason {
+  font-size: 12px;
+  color: var(--text-dim);
 }
 
 .app__title {
@@ -223,7 +237,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
   align-items: start;
 }
 
-@media (max-width: 800px), (orientation: portrait) {
+@media (max-width: 599px) {
   /* Deterministic row height, not flex:1 -- mixing flex-shrink with grid's 1fr rows let
      the browser silently drop the 3rd panel instead of resizing it. The page scrolls as
      one normal document below this point (via .app's own overflow-y) instead of nesting
@@ -241,6 +255,60 @@ input[type='range']:focus-visible::-moz-range-thumb {
     aspect-ratio: auto;
     flex: 1;
     min-height: 0;
+  }
+}
+
+/* Tablet portrait (iPad et al): the 599px phone breakpoint above would otherwise catch
+   this too via a bare `orientation:portrait` clause, stacking 3 charts full-width-and-tall
+   on a viewport with ~700-1000px of unused horizontal room. 2-up instead: Tachogram+PSD
+   share a row, Poincare (aspect-ratio:1/1 -- would render edge-to-edge-tall if allowed to
+   span full width) gets a row of its own but stays column-width-capped.
+
+   Same "no scroll mid-demo" requirement as the height-constrained fallback further down --
+   even 2-up, the full-size header/metrics/controls stacked above and below this chart row
+   still overflow a real iPad-portrait viewport (measured: ~130px short at 820x1180). Same
+   compaction moves as that fallback, applied by width+orientation here instead of height,
+   since a portrait iPad is tall in absolute px but still short on room once 2-up charts
+   claim half the width each. The 190px square cap below is tuned to zero-scroll at the
+   current 10.9" iPad class (820x1180 / 834x1194, portrait) with a little margin -- it does
+   NOT clear the older/smaller 9th-gen-class iPad (810x1080, ~47px still short); shrink
+   further only if that specific hardware needs to be supported too. */
+@media (min-width: 600px) and (max-width: 1023px) and (orientation: portrait) {
+  .app {
+    gap: var(--space-3);
+  }
+
+  .app__readout {
+    gap: var(--space-1);
+  }
+
+  .app__tabpanel {
+    gap: var(--space-3);
+  }
+
+  .chart-row {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .chart-row > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .chart-row > :last-child .panel__svg--square {
+    width: 190px;
+  }
+
+  .metric-tile {
+    padding: 6px 14px;
+  }
+
+  .metric-tile__value {
+    font-size: 24px;
+  }
+
+  .controls {
+    padding: 8px 16px;
   }
 }
 
@@ -288,7 +356,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .metrics-strip__ar-toggle {
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-1) var(--space-2);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -321,7 +389,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .window-toggle button {
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -384,9 +452,24 @@ input[type='range']:focus-visible::-moz-range-thumb {
   margin: var(--space-2) 0 0;
 }
 
-@media (max-width: 800px), (orientation: portrait) {
+@media (max-width: 599px) {
   .metrics-strip {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Mirrors the chart-row tablet-portrait rule above -- same 2-up-then-full-width-last
+   pattern, same column widths, so RMSSD/FFT/SDNN keep sitting directly above the charts
+   they summarize instead of drifting out of alignment between the two breakpoints. SDNN
+   (a metric-tile, not an aspect-ratio-locked chart) is fine spanning full width as a wide
+   bar -- it already renders that way at the phone breakpoint above. */
+@media (min-width: 600px) and (max-width: 1023px) and (orientation: portrait) {
+  .metrics-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .metrics-strip > :last-child {
+    grid-column: 1 / -1;
   }
 }
 
@@ -606,6 +689,11 @@ input[type='range']:focus-visible::-moz-range-thumb {
   fill: color-mix(in srgb, var(--c-violet) 25%, transparent);
 }
 
+.trace--amber {
+  stroke: var(--c-amber);
+  color: var(--c-amber);
+}
+
 /* Stroke only (open line, no fill) -- kept separate from the fills below because a
    closed d3.area() shape strokes its vertical closing edges too, which would put a false
    colored seam at every band boundary. */
@@ -743,7 +831,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .pacer-toggle {
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -918,6 +1006,24 @@ input[type='range']::-webkit-slider-thumb {
   max-width: 60ch;
 }
 
+/* 2x2 instead of 4 stacked full-width wide-aspect panels -- keeps the trend view compact
+   on History (which scrolls, but no reason to make it scroll further than it has to). */
+.sparkline-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.sparkline-grid__note {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 599px) {
+  .sparkline-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .session-list {
   display: flex;
   flex-direction: column;
@@ -980,6 +1086,43 @@ input[type='range']::-webkit-slider-thumb {
   color: var(--c-red);
 }
 
+/* Inline two-step confirm, not window.confirm() -- keeps the delete flow inside the
+   app's own bordered-panel button vocabulary instead of a stock OS dialog. */
+.session-list__confirm {
+  flex: none;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.session-list__confirm-cancel,
+.session-list__confirm-delete {
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.session-list__confirm-cancel {
+  color: var(--text-dim);
+}
+
+.session-list__confirm-cancel:active {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.session-list__confirm-delete {
+  border-color: var(--c-red);
+  color: var(--c-red);
+}
+
+.session-list__confirm-delete:active {
+  background: color-mix(in srgb, var(--c-red) 15%, var(--bg-panel-2));
+}
+
 .compare-table {
   display: flex;
   flex-direction: column;
@@ -1032,8 +1175,10 @@ input[type='range']::-webkit-slider-thumb {
    Same "no scrolling mid-demo" requirement as the width breakpoints above, but for a short
    viewport (e.g. an ordinary laptop's browser window) instead of a narrow one -- tighten
    vertical rhythm and shrink the tallest fixed-size elements before content is forced to
-   overflow .app's own scroll container. */
-@media (max-height: 820px) {
+   overflow .app's own scroll container. 920px (not 820px) -- measured a ~60px overflow at
+   a plain 1440x900 browser window with the old threshold, since 900 > 820 let the fallback
+   sit out exactly on one of the most common laptop viewport heights. */
+@media (max-height: 920px) {
   .app {
     gap: var(--space-3);
   }
