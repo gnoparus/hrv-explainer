@@ -75,7 +75,7 @@ export function MetricsStrip({
   lfPowerAr,
   hfPowerAr,
   arOrder,
-  beatCount,
+  liveWindowBeatCount,
   metricsWindow,
   onMetricsWindowChange,
   clinicalReadySec,
@@ -88,7 +88,7 @@ export function MetricsStrip({
   lfPowerAr: number
   hfPowerAr: number
   arOrder: number
-  beatCount: number
+  liveWindowBeatCount: number
   metricsWindow: MetricsWindow
   onMetricsWindowChange: (w: MetricsWindow) => void
   clinicalReadySec: number
@@ -103,7 +103,9 @@ export function MetricsStrip({
   // *some* beats, show the converging partial-window value instead of blanking the tiles for
   // up to 5 minutes while the charts below keep rendering fine; the "converging… Xs/300s"
   // caption below (via clinicalFilling) keeps the value's provisional status visible, not silent.
-  const warming = isLiveSource && beatCount < 8
+  // liveWindowBeatCount (not the monotonic total beat count) so this re-arms after a preset/reset
+  // jump the same way it does on a cold start -- see useHrvSimulation's markParamJump.
+  const warming = isLiveSource && liveWindowBeatCount < 8
   // Was `clinicalReadySec >= 300 || isLiveSource` -- that OR made isLiveSource alone always
   // win, which was invisible while the tiles blanked below 300s (this branch was unreachable
   // for that case); now that partial-window values render instead of blanking, the bug would
@@ -126,8 +128,32 @@ export function MetricsStrip({
         ? 'rolling 60s window'
         : `full recording (${Math.floor(clinicalReadySec)}s)`
 
+  // Dragging a slider is the app's core interaction, and it had zero non-visual feedback --
+  // the ▲/▼ delta arrows are aria-hidden (correctly, as decoration) but nothing spoke a text
+  // equivalent. A new beat lands roughly once a second, so a debounce keyed to these values
+  // would restart on every beat and never actually fire -- a periodic interval, reading the
+  // latest values from a ref, announces every ~2.5s instead: frequent enough to track a slider
+  // drag, not so frequent it spams the screen reader with every intermediate value.
+  const latestRef = useRef({ rmssdMs, sdnnMs, hfPower, lfPower })
+  latestRef.current = { rmssdMs, sdnnMs, hfPower, lfPower }
+  const [announcement, setAnnouncement] = useState('')
+  useEffect(() => {
+    if (warming) return
+    const id = setInterval(() => {
+      const v = latestRef.current
+      setAnnouncement(
+        `RMSSD ${v.rmssdMs.toFixed(1)} milliseconds, SDNN ${v.sdnnMs.toFixed(1)} milliseconds, ` +
+          `HF power ${v.hfPower.toFixed(1)}, LF power ${v.lfPower.toFixed(1)}`,
+      )
+    }, 2500)
+    return () => clearInterval(id)
+  }, [warming])
+
   return (
     <div className="metrics-strip-wrap">
+      <div className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </div>
       <div className="window-toggle" role="group" aria-label="Metrics window">
         <button type="button" aria-pressed={!isClinical} onClick={() => onMetricsWindowChange('live')}>
           60s Live
@@ -184,8 +210,11 @@ export function MetricsStrip({
               info="Spectral power 0.04-0.15 Hz. Mixed baroreflex activity, not purely sympathetic. The classic 'LF/HF = sympathovagal balance' interpretation is now widely considered invalid (Billman 2013) -- shown here descriptively, not as a mechanistic index. FFT/Hann periodogram: a single windowed FFT over the whole record, not segment-averaged Welch -- the established clinical-standard method. Tap 'Compare Burg AR' above for a second estimate; expect close agreement, a large gap usually means the AR model order doesn't fit this window well, not that one method is 'more correct.'"
             />
           </div>
-          {showAr && (
-            <>
+          {/* Always mounted (not gated behind `showAr &&`) so the height-animation below has
+              real content to grow from -- an instant mount+reflow was the original P2, this
+              is the "animate the height change" fix rather than reserving dead space. */}
+          <div className={`metrics-strip__ar-row${showAr ? ' metrics-strip__ar-row--open' : ''}`}>
+            <div className="metrics-strip__ar-row-inner">
               <span className="metrics-strip__pair-group-label">Burg AR (order {arOrder})</span>
               <div className="metrics-strip__pair">
                 <MetricTile
@@ -207,8 +236,8 @@ export function MetricsStrip({
                   info="Same 0.04-0.15 Hz band, estimated via Burg autoregressive spectral estimation instead of the FFT periodogram -- sharper peak resolution on short windows, at the cost of depending on the chosen model order (shown above)."
                 />
               </div>
-            </>
-          )}
+            </div>
+          </div>
         </div>
         <MetricTile
           label="SDNN"

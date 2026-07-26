@@ -173,7 +173,7 @@ Instrument-panel components: flat, bordered, low-radius, glow on the data — ne
 ### Inputs (range sliders)
 - **Track:** 8px pill, teal-to-violet gradient — the slider track itself doubles as a color-coded scale
 - **Thumb:** 30px white circle, 3px teal border, teal glow shadow — always the largest touch target on screen (44px hit area via the input's own height)
-- **No focus ring is styled**; treat this as a gap to close under `/impeccable harden` or `/impeccable audit`, not an intentional omission
+- **Focus ring:** teal double-ring on `:focus-visible` (3px `--bg` halo + teal outer ring), styled via `input[type='range']:focus-visible::-webkit-slider-thumb` in `src/index.css`
 
 ### Toggle Group (tab bar, window toggle, source toggle)
 Two-or-three-way exclusive choice, all sharing one CSS shape (`.window-toggle`/`.tabbar` in `src/index.css`): bordered-panel buttons (Panel Raised background, 1px hairline), the selected option's border and text shift to signal teal (`aria-pressed`/`aria-selected`), unselected options stay `--text-dim`. Used for the Live/History tab bar, the metrics-window toggle (60s live / 5-min clinical), and the data-source toggle (Simulated / Uploaded). Same rule as Buttons above: no filled/CTA treatment, no second selected-state color — teal is the one "active" signal across every toggle group in the app.

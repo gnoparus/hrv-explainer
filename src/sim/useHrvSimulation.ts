@@ -28,6 +28,9 @@ export interface HrvSnapshot {
   points: { t: number; rrMs: number }[]
   beatCount: number // monotonic, unlike points.length which plateaus once the display window fills
   live: WindowMetrics // rolling 60s window
+  liveWindowBeatCount: number // beats actually inside the live window since its last reset -- distinct
+  // from beatCount so a post-jump settle (see markParamJump) can gate the "warming" UI the same way
+  // a cold start does, without beatCount itself (which never resets) being able to express that.
   clinical: WindowMetrics // rolling 5-min window (clinical short-term standard)
   clinicalReadySec: number // seconds of data buffered toward the 5-min clinical window, capped at 300
 }
@@ -47,6 +50,7 @@ const EMPTY_SNAPSHOT: HrvSnapshot = {
   points: [],
   beatCount: 0,
   live: EMPTY_WINDOW,
+  liveWindowBeatCount: 0,
   clinical: EMPTY_WINDOW,
   clinicalReadySec: 0,
 }
@@ -69,6 +73,7 @@ export function snapshotFromPoints(points: { t: number; rrMs: number }[]): HrvSn
     points: displayPoints,
     beatCount: points.length,
     live: computeWindowMetrics(recent),
+    liveWindowBeatCount: recent.length,
     clinical: computeWindowMetrics(clinicalWindow),
     clinicalReadySec: Math.min(CLINICAL_WINDOW_SECONDS, lastT - firstT),
   }
@@ -95,10 +100,30 @@ function computeWindowMetrics(points: { t: number; rrMs: number }[]): WindowMetr
 // state on every beat instead of running a separate rAF scroll clock -- at ~300 SVG points
 // updated once a second the DOM churn is negligible. Upgrade to a decoupled rAF scroll layer
 // only if profiling on the actual iPad shows jank.
-export function useHrvSimulation(params: HrvParams): HrvSnapshot {
+export interface HrvSimulation {
+  snapshot: HrvSnapshot
+  // Call after a discrete parameter change (a preset or reset click, as opposed to a slider
+  // drag) so the live 60s window drops beats generated under the old regime instead of mixing
+  // them with the new ones. Without this, a windowed spectral estimate over a mixed-regime
+  // buffer could transiently read *past* the old value in the wrong direction (verified: HF
+  // power briefly exceeding its pre-click reading after a preset that should only lower it).
+  // This doesn't make the settle instant -- a short post-jump window is still a noisier
+  // spectral estimate than a full 60s one, so the number can still climb somewhat during the
+  // ~60s refill before landing on its converged value -- but it no longer overshoots back past
+  // where it started, which was the specific, demo-credibility-breaking failure. Continuous
+  // drags don't need this: each onChange step is small enough that the window blends smoothly
+  // on its own.
+  markParamJump: () => void
+}
+
+export function useHrvSimulation(params: HrvParams): HrvSimulation {
   const [snapshot, setSnapshot] = useState<HrvSnapshot>(EMPTY_SNAPSHOT)
   const paramsRef = useRef(params)
   paramsRef.current = params
+  const pendingJumpRef = useRef(false)
+  const markParamJump = useRef(() => {
+    pendingJumpRef.current = true
+  }).current
 
   useEffect(() => {
     const generator = new RRGenerator(Math.random)
@@ -106,6 +131,7 @@ export function useHrvSimulation(params: HrvParams): HrvSnapshot {
     let beatCount = 0
     let cancelled = false
     let timeoutId: ReturnType<typeof setTimeout>
+    let liveWindowResetAt = -Infinity
 
     function tick() {
       if (cancelled) return
@@ -115,12 +141,16 @@ export function useHrvSimulation(params: HrvParams): HrvSnapshot {
         breathingRateBrpm: paramsRef.current.breathingRateBrpm,
         vagalTone: paramsRef.current.vagalTone,
       })
+      if (pendingJumpRef.current) {
+        liveWindowResetAt = beat.t
+        pendingJumpRef.current = false
+      }
       raw.push(beat)
       const cutoff = beat.t - DISPLAY_WINDOW_SECONDS
       raw = raw.filter((p) => p.t >= cutoff)
 
       const metricsCutoff = beat.t - METRICS_WINDOW_SECONDS
-      const recent = raw.filter((p) => p.t >= metricsCutoff)
+      const recent = raw.filter((p) => p.t >= Math.max(metricsCutoff, liveWindowResetAt))
 
       // Elapsed sim time, not raw's filtered span: `raw` only retains points with
       // t >= beat.t - DISPLAY_WINDOW_SECONDS, so its oldest point always lags slightly behind
@@ -132,6 +162,7 @@ export function useHrvSimulation(params: HrvParams): HrvSnapshot {
         points: raw,
         beatCount,
         live: computeWindowMetrics(recent),
+        liveWindowBeatCount: recent.length,
         clinical: computeWindowMetrics(raw),
         clinicalReadySec,
       })
@@ -147,5 +178,5 @@ export function useHrvSimulation(params: HrvParams): HrvSnapshot {
     }
   }, [])
 
-  return snapshot
+  return { snapshot, markParamJump }
 }

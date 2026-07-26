@@ -20,9 +20,14 @@ const TABS = [
 ] as const
 type TabKey = (typeof TABS)[number]['key']
 
+// The state a "Reset" click returns to -- whatever the demo actually opened with (a URL
+// preset, if given), not a hardcoded default that would ignore a presenter's deep link.
+const initialBreathingRateBrpm = initialPreset?.breathingRateBrpm ?? 12
+const initialVagalTone = initialPreset?.vagalTone ?? 0.6
+
 function App() {
-  const [breathingRateBrpm, setBreathingRateBrpm] = useState(initialPreset?.breathingRateBrpm ?? 12)
-  const [vagalTone, setVagalTone] = useState(initialPreset?.vagalTone ?? 0.6)
+  const [breathingRateBrpm, setBreathingRateBrpm] = useState(initialBreathingRateBrpm)
+  const [vagalTone, setVagalTone] = useState(initialVagalTone)
   const [metricsWindow, setMetricsWindow] = useState<'live' | 'clinical'>('live')
   const [showPacer, setShowPacer] = useState(false)
   const [tab, setTab] = useState<TabKey>('live')
@@ -32,7 +37,7 @@ function App() {
 
   // Always run the simulator (hooks can't be conditional) -- its output is simply unused
   // while an uploaded file is the active source.
-  const liveSnapshot = useHrvSimulation({ breathingRateBrpm, vagalTone })
+  const { snapshot: liveSnapshot, markParamJump } = useHrvSimulation({ breathingRateBrpm, vagalTone })
   const uploadedSnapshot = useMemo(
     () => (uploadedData ? snapshotFromPoints(uploadedData.points) : null),
     [uploadedData],
@@ -42,9 +47,22 @@ function App() {
   const active = metricsWindow === 'clinical' ? snapshot.clinical : snapshot.live
   // Same readiness condition MetricsStrip uses to show dashes -- saving a still-warming
   // (near-zero/partial) value would record it in history as if it were a real result.
+  // Keyed off liveWindowBeatCount, not the monotonic beatCount, so this also re-arms after a
+  // preset/reset jump (see markParamJump) the same way it does on a cold start.
   const metricsWarming =
     source === 'simulated' &&
-    (metricsWindow === 'clinical' ? snapshot.clinicalReadySec < 300 : snapshot.beatCount < 8)
+    (metricsWindow === 'clinical' ? snapshot.clinicalReadySec < 300 : snapshot.liveWindowBeatCount < 8)
+
+  function handlePresetVagalTone(v: number) {
+    setVagalTone(v)
+    markParamJump()
+  }
+
+  function handleReset() {
+    setBreathingRateBrpm(initialBreathingRateBrpm)
+    setVagalTone(initialVagalTone)
+    markParamJump()
+  }
 
   function handleSave() {
     if (metricsWarming) return
@@ -137,7 +155,7 @@ function App() {
                 lfPowerAr={active.lfPowerAr}
                 hfPowerAr={active.hfPowerAr}
                 arOrder={active.psdAr.order}
-                beatCount={snapshot.beatCount}
+                liveWindowBeatCount={snapshot.liveWindowBeatCount}
                 metricsWindow={metricsWindow}
                 onMetricsWindowChange={setMetricsWindow}
                 clinicalReadySec={snapshot.clinicalReadySec}
@@ -177,6 +195,8 @@ function App() {
               vagalTone={vagalTone}
               onBreathingRateChange={setBreathingRateBrpm}
               onVagalToneChange={setVagalTone}
+              onPresetVagalTone={handlePresetVagalTone}
+              onReset={handleReset}
               showPacer={showPacer}
               onTogglePacer={() => setShowPacer((v) => !v)}
             />
