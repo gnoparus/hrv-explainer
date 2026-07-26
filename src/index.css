@@ -111,7 +111,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .tabbar__tab {
   min-height: 36px;
-  padding: 6px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -152,7 +152,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .save-session-btn {
   min-height: 36px;
-  padding: 6px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -289,7 +289,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .metrics-strip__ar-toggle {
   min-height: 36px;
-  padding: 3px 10px;
+  padding: var(--space-1) var(--space-2);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -322,7 +322,7 @@ input[type='range']:focus-visible::-moz-range-thumb {
 
 .window-toggle button {
   min-height: 36px;
-  padding: 6px 14px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
@@ -725,8 +725,8 @@ input[type='range']:focus-visible::-moz-range-thumb {
 }
 
 .pacer-toggle {
-  min-height: 32px;
-  padding: 4px 12px;
+  min-height: 36px;
+  padding: var(--space-2) var(--space-4);
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-panel-2);
